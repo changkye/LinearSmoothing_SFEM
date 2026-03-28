@@ -1,0 +1,6 @@
+res/
+bin/
+build/
+.DS_Store
+02-Matlab/results/**/*.vtu
+02-Matlab/results/**/*.mat
