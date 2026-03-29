@@ -1,4 +1,0 @@
-/Users/cklee/Desktop/03-CK_Project/06-LinearSmoohtingSFEM/build-umfpack-check/CMakeFiles/csfem.dir
-/Users/cklee/Desktop/03-CK_Project/06-LinearSmoohtingSFEM/build-umfpack-check/CMakeFiles/esfem.dir
-/Users/cklee/Desktop/03-CK_Project/06-LinearSmoohtingSFEM/build-umfpack-check/CMakeFiles/edit_cache.dir
-/Users/cklee/Desktop/03-CK_Project/06-LinearSmoohtingSFEM/build-umfpack-check/CMakeFiles/rebuild_cache.dir

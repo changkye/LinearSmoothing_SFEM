@@ -17,16 +17,54 @@ option(ENABLE_OPENMP "Enable OpenMP parallel assembly when available" ON)
 option(ENABLE_UMFPACK "Enable SuiteSparse/UMFPACK when available" ON)
 
 if(ENABLE_UMFPACK AND PkgConfig_FOUND)
-    pkg_check_modules(UMFPACK QUIET umfpack)
+    pkg_check_modules(UMFPACK_PC QUIET UMFPACK)
+    if(NOT UMFPACK_PC_FOUND)
+        pkg_check_modules(UMFPACK_PC QUIET umfpack)
+    endif()
 endif()
 
 if(ENABLE_UMFPACK)
+    if(UMFPACK_PC_FOUND)
+        set(UMFPACK_FOUND TRUE)
+        set(UMFPACK_INCLUDE_DIRS ${UMFPACK_PC_INCLUDE_DIRS})
+        set(UMFPACK_LINK_LIBRARIES ${UMFPACK_PC_LINK_LIBRARIES})
+        set(UMFPACK_DETECTION_METHOD "pkg-config")
+    else()
+        find_path(UMFPACK_INCLUDE_DIR
+            NAMES umfpack.h
+            HINTS
+                /opt/homebrew/include
+                /opt/homebrew/include/suitesparse
+                /usr/local/include
+                /usr/local/include/suitesparse
+                /usr/include
+                /usr/include/suitesparse
+            PATH_SUFFIXES suitesparse
+        )
+        find_library(UMFPACK_LIBRARY
+            NAMES umfpack
+            HINTS
+                /opt/homebrew/lib
+                /usr/local/lib
+                /usr/lib
+        )
+
+        if(UMFPACK_INCLUDE_DIR AND UMFPACK_LIBRARY)
+            set(UMFPACK_FOUND TRUE)
+            set(UMFPACK_INCLUDE_DIRS ${UMFPACK_INCLUDE_DIR})
+            set(UMFPACK_LINK_LIBRARIES ${UMFPACK_LIBRARY})
+            set(UMFPACK_DETECTION_METHOD "manual search")
+        endif()
+    endif()
+
     set(CMAKE_REQUIRED_INCLUDES ${EIGEN3_TARGET_INCLUDE_DIRS})
     if(UMFPACK_FOUND)
         list(APPEND CMAKE_REQUIRED_INCLUDES ${UMFPACK_INCLUDE_DIRS})
     endif()
     check_include_file_cxx("Eigen/UmfPackSupport" EIGEN_HAS_UMFPACK_SUPPORT_NEW)
-    check_include_file_cxx("unsupported/Eigen/UmfPackSupport" EIGEN_HAS_UMFPACK_SUPPORT_OLD)
+    if(NOT EIGEN_HAS_UMFPACK_SUPPORT_NEW)
+        check_include_file_cxx("unsupported/Eigen/UmfPackSupport" EIGEN_HAS_UMFPACK_SUPPORT_OLD)
+    endif()
     unset(CMAKE_REQUIRED_INCLUDES)
 
     if(EIGEN_HAS_UMFPACK_SUPPORT_NEW OR EIGEN_HAS_UMFPACK_SUPPORT_OLD)
@@ -43,7 +81,7 @@ if(ENABLE_UMFPACK AND UMFPACK_FOUND AND EIGEN_HAS_UMFPACK_SUPPORT)
         INTERFACE_LINK_LIBRARIES "${UMFPACK_LINK_LIBRARIES}"
         INTERFACE_COMPILE_DEFINITIONS "USE_EIGEN_UMFPACK"
     )
-    message(STATUS "UMFPACK enabled via pkg-config")
+    message(STATUS "UMFPACK enabled via ${UMFPACK_DETECTION_METHOD}")
 elseif(ENABLE_UMFPACK)
     message(STATUS "UMFPACK requested but unavailable in this Eigen/toolchain setup; building without UMFPACK")
 endif()

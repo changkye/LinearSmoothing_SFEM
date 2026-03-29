@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/Users/cklee/Desktop/03-CK_Project/06-LinearSmoohtingSFEM/build-umfpack-check/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
