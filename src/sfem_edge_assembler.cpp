@@ -3,6 +3,8 @@
 #include "sfem_mesh.hpp"
 
 #include <algorithm>
+#include <stdexcept>
+#include <unordered_map>
 
 namespace nonlinear_esfem_t6::shared
 {
@@ -17,6 +19,20 @@ struct TargetEdge
     int local_edge1 = 0;
     int local_edge2 = -1;
 };
+
+int local_edge_index_from_corner_nodes(const std::array<int, 6> &element, int node_a, int node_b)
+{
+    for (int edge = 0; edge < 3; ++edge)
+    {
+        const int edge_a = element[static_cast<std::size_t>(edge)];
+        const int edge_b = element[static_cast<std::size_t>((edge + 1) % 3)];
+        if ((edge_a == node_a && edge_b == node_b) || (edge_a == node_b && edge_b == node_a))
+        {
+            return edge;
+        }
+    }
+    throw std::runtime_error("Failed to match a shared T6 edge while building ESFEM support data");
+}
 
 } // namespace
 
@@ -163,38 +179,75 @@ std::vector<SupportDomain> EdgeSmoothedDomainAssembler::build_domains(const Prob
             }
         }
 
-        std::vector<int> reorder;
         std::string parent_element;
         QuadratureRule interior_rule;
+        std::vector<int> reordered_nodes;
         if (target.elem2 < 0)
         {
-            reorder = {0, 1, 2, 3, 4, 5};
+            reordered_nodes.assign(nodl.begin(), nodl.end());
             parent_element = "T6";
             interior_rule = quadrature.triangle(problem.edge_tri_quad_order);
         }
         else
         {
+            const auto &elem1 = problem.mesh.elements[static_cast<std::size_t>(target.elem1)];
+            const auto &elem2 = problem.mesh.elements[static_cast<std::size_t>(target.elem2)];
+            const int shared_local_a = target.local_edge1;
+            const int shared_local_b = (target.local_edge1 + 1) % 3;
+            const int opposite_local = (target.local_edge1 + 2) % 3;
+
+            const int shared_a = elem1[static_cast<std::size_t>(shared_local_a)];
+            const int shared_b = elem1[static_cast<std::size_t>(shared_local_b)];
+            const int opposite1 = elem1[static_cast<std::size_t>(opposite_local)];
+            const int mid_shared = elem1[static_cast<std::size_t>(3 + target.local_edge1)];
+            const int mid_b_opp1 = elem1[static_cast<std::size_t>(3 + ((target.local_edge1 + 1) % 3))];
+            const int mid_opp1_a = elem1[static_cast<std::size_t>(3 + ((target.local_edge1 + 2) % 3))];
+
+            int opposite2 = -1;
+            for (int local = 0; local < 3; ++local)
+            {
+                const int node = elem2[static_cast<std::size_t>(local)];
+                if (node != shared_a && node != shared_b)
+                {
+                    opposite2 = node;
+                    break;
+                }
+            }
+            if (opposite2 < 0)
+            {
+                throw std::runtime_error("Failed to locate the opposite node of a shared edge in Cook ESFEM support data");
+            }
+
+            const int edge_a_opp2 = local_edge_index_from_corner_nodes(elem2, shared_a, opposite2);
+            const int edge_opp2_b = local_edge_index_from_corner_nodes(elem2, opposite2, shared_b);
+            const int mid_a_opp2 = elem2[static_cast<std::size_t>(3 + edge_a_opp2)];
+            const int mid_opp2_b = elem2[static_cast<std::size_t>(3 + edge_opp2_b)];
+
             if (target.local_edge1 == 0)
             {
-                reorder = {0, 6, 1, 2, 8, 7, 4, 5, 3};
+                reordered_nodes = {shared_a, opposite2, shared_b, opposite1,
+                                   mid_a_opp2, mid_opp2_b, mid_b_opp1, mid_opp1_a, mid_shared};
             }
             else if (target.local_edge1 == 1)
             {
-                reorder = {0, 1, 6, 2, 3, 7, 8, 5, 4};
+                reordered_nodes = {opposite1, shared_a, opposite2, shared_b,
+                                   mid_opp1_a, mid_a_opp2, mid_opp2_b, mid_b_opp1, mid_shared};
             }
             else
             {
-                reorder = {0, 1, 2, 6, 3, 4, 7, 8, 5};
+                reordered_nodes = {shared_b, opposite1, shared_a, opposite2,
+                                   mid_b_opp1, mid_opp1_a, mid_a_opp2, mid_opp2_b, mid_shared};
             }
+
             parent_element = "Q9";
             interior_rule = quadrature.gauss_quad(problem.edge_quad_quad_order);
         }
 
-        std::vector<int> reordered_nodes;
-        reordered_nodes.reserve(reorder.size());
-        for (const int index : reorder)
+        std::unordered_map<int, int> support_pos;
+        support_pos.reserve(nodl.size());
+        for (int i = 0; i < static_cast<int>(nodl.size()); ++i)
         {
-            reordered_nodes.push_back(nodl[static_cast<std::size_t>(index)]);
+            support_pos.emplace(nodl[static_cast<std::size_t>(i)], i);
         }
 
         Eigen::MatrixXd gcoord(reordered_nodes.size(), 2);
@@ -203,8 +256,9 @@ std::vector<SupportDomain> EdgeSmoothedDomainAssembler::build_domains(const Prob
         for (int i = 0; i < static_cast<int>(reordered_nodes.size()); ++i)
         {
             gcoord.row(i) = problem.mesh.nodes.row(reordered_nodes[static_cast<std::size_t>(i)]);
-            reordered_fx.col(i) = fx.col(reorder[static_cast<std::size_t>(i)]);
-            reordered_fy.col(i) = fy.col(reorder[static_cast<std::size_t>(i)]);
+            const int src = support_pos.at(reordered_nodes[static_cast<std::size_t>(i)]);
+            reordered_fx.col(i) = fx.col(src);
+            reordered_fy.col(i) = fy.col(src);
         }
 
         Eigen::MatrixXd m = Eigen::MatrixXd::Zero(6, 6);
@@ -260,6 +314,21 @@ std::vector<SupportDomain> EdgeSmoothedDomainAssembler::build_domains(const Prob
         domain.dy = p * mreg_lu.solve(reordered_fy);
         domain.weights = std::move(weights);
         domain.sub_area = sub_area[static_cast<std::size_t>(edge_index)];
+        {
+            double w_total = 0.0;
+            for (const double w : domain.weights)
+            {
+                w_total += w;
+            }
+            if (w_total > 0.0)
+            {
+                const double scale = domain.sub_area / w_total;
+                for (double &w : domain.weights)
+                {
+                    w *= scale;
+                }
+            }
+        }
         domains.push_back(std::move(domain));
     }
 

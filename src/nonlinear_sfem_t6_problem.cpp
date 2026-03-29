@@ -1,17 +1,17 @@
 #include "model_parameters.hpp"
-#include "nonlinear_esfem_t6.hpp"
+#include "nonlinear_sfem_t6.hpp"
 #include "sfem_shared.hpp"
 
 namespace nonlinear_esfem_t6
 {
 
-NonlinearEsfemT6Problem::NonlinearEsfemT6Problem(Problem problem)
+NonlinearSfemT6Problem::NonlinearSfemT6Problem(Problem problem)
     : problem_(std::move(problem))
 {
 }
 
-NonlinearEsfemT6Problem NonlinearEsfemT6Problem::make_not_so_simple_shear(const Eigen::Vector2i &num_els,
-                                                                          const Eigen::Vector2d &material)
+NonlinearSfemT6Problem NonlinearSfemT6Problem::make_not_so_simple_shear(const Eigen::Vector2i &num_els,
+                                                                        const Eigen::Vector2d &material)
 {
     Problem problem;
     const auto geometry = model_parameters::geometry_for("nonlinear_patch");
@@ -32,15 +32,15 @@ NonlinearEsfemT6Problem NonlinearEsfemT6Problem::make_not_so_simple_shear(const 
     problem.edge_tri_quad_order = model_parameters::esfem_edge_tri_quad_order;
     problem.edge_quad_quad_order = model_parameters::esfem_edge_quad_quad_order;
     problem.edge_reg_param = model_parameters::esfem_edge_reg_param;
-    return NonlinearEsfemT6Problem(std::move(problem));
+    return NonlinearSfemT6Problem(std::move(problem));
 }
 
-const Problem &NonlinearEsfemT6Problem::data() const
+const Problem &NonlinearSfemT6Problem::data() const
 {
     return problem_;
 }
 
-Problem &NonlinearEsfemT6Problem::data()
+Problem &NonlinearSfemT6Problem::data()
 {
     return problem_;
 }

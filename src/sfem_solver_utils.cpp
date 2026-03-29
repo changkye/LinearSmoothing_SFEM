@@ -3,6 +3,7 @@
 
 #include <Eigen/IterativeLinearSolvers>
 #include <Eigen/SparseLU>
+#include <Eigen/SparseQR>
 #ifdef USE_EIGEN_UMFPACK
 #if __has_include(<Eigen/UmfPackSupport>)
 #include <Eigen/UmfPackSupport>
@@ -218,6 +219,78 @@ Eigen::VectorXd solve_with_iterative_fallback(const SparseMatrix &a,
     throw std::runtime_error("Failed to factorize sparse tangent matrix");
 }
 
+Eigen::VectorXd solve_with_sparse_qr_fallback(const SparseMatrix &a, const Eigen::VectorXd &b)
+{
+    constexpr double kShifts[] = {0.0, 1.0e-12, 1.0e-10, 1.0e-8, 1.0e-6, 1.0e-4, 1.0e-2};
+    Eigen::VectorXd best_x;
+    double best_residual = std::numeric_limits<double>::infinity();
+
+    for (const double shift : kShifts)
+    {
+        SparseMatrix trial = a;
+        if (shift > 0.0)
+        {
+            trial.diagonal().array() += shift;
+        }
+        trial.makeCompressed();
+
+        Eigen::SparseQR<SparseMatrix, Eigen::COLAMDOrdering<int>> qr;
+        qr.compute(trial);
+        if (qr.info() != Eigen::Success)
+        {
+            continue;
+        }
+
+        const Eigen::VectorXd x = qr.solve(b);
+        if (qr.info() != Eigen::Success || !x.allFinite())
+        {
+            continue;
+        }
+
+        const Eigen::VectorXd residual = a * x - b;
+        if (!residual.allFinite())
+        {
+            continue;
+        }
+
+        const double norm = residual.norm();
+        if (norm < best_residual)
+        {
+            best_residual = norm;
+            best_x = x;
+        }
+
+        if (is_acceptable_solution(a, b, x))
+        {
+            return x;
+        }
+    }
+
+    if (best_x.size() != 0)
+    {
+        return best_x;
+    }
+
+    throw std::runtime_error("Failed to factorize sparse tangent matrix");
+}
+
+Eigen::VectorXd solve_with_umfpack_fallback(const SparseMatrix &a, const Eigen::VectorXd &b)
+{
+#ifdef USE_EIGEN_UMFPACK
+    Eigen::UmfPackLU<SparseMatrix> umfpack;
+    umfpack.compute(a);
+    if (umfpack.info() == Eigen::Success)
+    {
+        const Eigen::VectorXd x = umfpack.solve(b);
+        if (umfpack.info() == Eigen::Success && x.allFinite())
+        {
+            return x;
+        }
+    }
+#endif
+    throw std::runtime_error("Failed to factorize sparse tangent matrix");
+}
+
 Eigen::VectorXd solve_with_fresh_sparse_lu(SparseMatrix a, const Eigen::VectorXd &b)
 {
     constexpr double kShifts[] = {0.0, 1.0e-12, 1.0e-10, 1.0e-8, 1.0e-6};
@@ -403,10 +476,24 @@ Eigen::VectorXd LinearSystemSolver::solve(SparseMatrix a,
         impl_->analyzed = false;
         try
         {
+            return solve_with_umfpack_fallback(a, b);
+        }
+        catch (const std::runtime_error &)
+        {
+        }
+        try
+        {
             return solve_with_fresh_sparse_lu(a, b);
         }
         catch (const std::runtime_error &)
         {
+            try
+            {
+                return solve_with_sparse_qr_fallback(a, b);
+            }
+            catch (const std::runtime_error &)
+            {
+            }
             try
             {
                 return solve_with_iterative_fallback(a,
@@ -430,6 +517,13 @@ Eigen::VectorXd LinearSystemSolver::solve(SparseMatrix a,
         {
             return x;
         }
+    }
+    try
+    {
+        return solve_with_umfpack_fallback(a, b);
+    }
+    catch (const std::runtime_error &)
+    {
     }
     if (a.rows() <= 2500)
     {
@@ -485,6 +579,38 @@ void ConstraintHandler::apply_dirichlet(const BoundaryCondition &bc,
         rhs(dof) = prescribed_vals(dof);
     }
     k.prune(0.0);
+}
+
+int regularize_near_zero_rows(SparseMatrix &a, Eigen::VectorXd &b)
+{
+    constexpr double kRowTol = 1.0e-10;
+    std::vector<int> pinned_rows;
+    pinned_rows.reserve(32);
+
+    for (int row = 0; row < a.rows(); ++row)
+    {
+        double row_abs_sum = 0.0;
+        for (SparseMatrix::InnerIterator it(a, row); it; ++it)
+        {
+            row_abs_sum += std::abs(it.value());
+        }
+        if (row_abs_sum <= kRowTol)
+        {
+            pinned_rows.push_back(row);
+        }
+    }
+
+    for (const int row : pinned_rows)
+    {
+        a.coeffRef(row, row) = 1.0;
+        b(row) = 0.0;
+    }
+
+    if (!pinned_rows.empty())
+    {
+        a.makeCompressed();
+    }
+    return static_cast<int>(pinned_rows.size());
 }
 
 Result ResultBuilder::finalize(const Problem &problem,

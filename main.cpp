@@ -90,7 +90,7 @@ void print_help()
 #endif
     std::cout
         << "Usage:\n"
-        << "  " << exe_name << " [linear_patch|nonlinear_patch|cantilever|bending_block] [options]\n\n"
+        << "  " << exe_name << " [linear_patch|nonlinear_patch|cantilever|bending_block|cook] [options]\n\n"
         << "Options:\n"
         << "  --num-els <n|nxm>\n"
         << "  --num-els-x <n>\n"
@@ -108,7 +108,9 @@ void print_help()
         << "  --benchmark\n"
         << "  --benchmark-log <path>\n"
         << "  --debug-csfem-bending\n"
-        << "  --help\n";
+        << "  --help\n\n"
+        << "Notes:\n"
+        << "  cook reads data/Cook.msh directly; generate it first with data/run_mesh.sh.\n";
 }
 
 std::string solver_name(fem::LinearSolverType solver)
@@ -143,6 +145,10 @@ std::string result_base_name(fem::Method method,
                              fem::Scenario scenario,
                              const Eigen::Vector2i &num_els)
 {
+    if (scenario == fem::Scenario::Cook)
+    {
+        return method_prefix(method) + "_cook";
+    }
     return method_prefix(method) + "_" + fem::scenario_name(scenario) + "_" +
            std::to_string(num_els(0)) + "x" + std::to_string(num_els(1));
 }
@@ -502,6 +508,14 @@ int main(int argc, char **argv)
         }
 
         apply_problem_specific_newton_tuning(fixed_method(), scenario, num_els, newton);
+#ifdef USE_EIGEN_UMFPACK
+        if (!solver_overridden &&
+            scenario == fem::Scenario::Cook &&
+            (fixed_method() == fem::Method::CSFEM || fixed_method() == fem::Method::ESFEM))
+        {
+            newton.linear_solver = fem::LinearSolverType::UmfPack;
+        }
+#endif
         fem::NewtonOptions large_problem_tuned = newton;
         apply_large_problem_tuning(fixed_method(), scenario, num_els, large_problem_tuned);
         if (!solver_overridden)
@@ -533,7 +547,7 @@ int main(int argc, char **argv)
             const fem::Result result = solver->solve(problem, newton);
             const auto solve_end = std::chrono::steady_clock::now();
 
-            const std::string base_name = result_base_name(method, scenario, num_els);
+            const std::string base_name = result_base_name(method, scenario, problem.data().num_els);
             const std::filesystem::path vtk_file = run_dir / (base_name + ".vtu");
             if (output_options.write_vtu)
             {
@@ -545,7 +559,7 @@ int main(int argc, char **argv)
                                        base_name,
                                        method,
                                        scenario,
-                                       num_els,
+                                       problem.data().num_els,
                                        result,
                                        problem.data().mesh,
                                        problem.data().has_exact_solution && newton.compute_exact_solution,
@@ -559,8 +573,8 @@ int main(int argc, char **argv)
                 record.timestamp_utc = benchmark::utc_timestamp_now();
                 record.problem_type = fem::scenario_name(scenario);
                 record.method = fem::method_name(method);
-                record.num_els_x = num_els(0);
-                record.num_els_y = num_els(1);
+                record.num_els_x = problem.data().num_els(0);
+                record.num_els_y = problem.data().num_els(1);
                 record.nstep = newton.nstep;
                 record.maxiter = newton.maxiter;
                 record.solver = solver_name(newton.linear_solver);

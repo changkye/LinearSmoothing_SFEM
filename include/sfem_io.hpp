@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nonlinear_esfem_t6.hpp"
+#include "nonlinear_sfem_t6.hpp"
 
 #include <filesystem>
 

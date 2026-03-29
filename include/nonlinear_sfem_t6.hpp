@@ -74,31 +74,33 @@ struct Result
     double strain_energy = 0.0;
 };
 
-class NonlinearEsfemT6Problem
+class NonlinearSfemT6Problem
 {
 public:
-    static NonlinearEsfemT6Problem make_not_so_simple_shear(const Eigen::Vector2i &num_els,
-                                                            const Eigen::Vector2d &material);
+    static NonlinearSfemT6Problem make_not_so_simple_shear(const Eigen::Vector2i &num_els,
+                                                           const Eigen::Vector2d &material);
 
     const Problem &data() const;
     Problem &data();
 
 private:
-    explicit NonlinearEsfemT6Problem(Problem problem);
+    explicit NonlinearSfemT6Problem(Problem problem);
     Problem problem_;
 };
+
+using NonlinearEsfemT6Problem = NonlinearSfemT6Problem;
 
 class NonlinearEsfemT6Solver
 {
 public:
-    Result solve(const NonlinearEsfemT6Problem &problem,
+    Result solve(const NonlinearSfemT6Problem &problem,
                  const SolverOptions &options) const;
 };
 
 class NonlinearCsfemT6Solver
 {
 public:
-    Result solve(const NonlinearEsfemT6Problem &problem,
+    Result solve(const NonlinearSfemT6Problem &problem,
                  const SolverOptions &options) const;
 };
 

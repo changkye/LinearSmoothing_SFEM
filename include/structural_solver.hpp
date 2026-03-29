@@ -24,7 +24,8 @@ enum class Scenario
     LinearPatch,
     NonlinearPatch,
     Cantilever,
-    BendingBlock
+    BendingBlock,
+    Cook
 };
 
 enum class LinearSolverType

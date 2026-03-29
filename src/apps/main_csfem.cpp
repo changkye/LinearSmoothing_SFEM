@@ -1,6 +1,6 @@
 #include "benchmark_utils.hpp"
 #include "model_parameters.hpp"
-#include "nonlinear_esfem_t6.hpp"
+#include "nonlinear_sfem_t6.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -423,7 +423,7 @@ int main(int argc, char **argv)
 
         const auto total_start = std::chrono::steady_clock::now();
         const auto problem =
-            nonlinear_esfem_t6::NonlinearEsfemT6Problem::make_not_so_simple_shear(Eigen::Vector2i::Constant(num_els), material);
+            nonlinear_esfem_t6::NonlinearSfemT6Problem::make_not_so_simple_shear(Eigen::Vector2i::Constant(num_els), material);
         const nonlinear_esfem_t6::NonlinearCsfemT6Solver solver;
         const auto solve_start = std::chrono::steady_clock::now();
         const nonlinear_esfem_t6::Result result = solver.solve(problem, options);

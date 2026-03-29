@@ -660,6 +660,12 @@ Result NonlinearSmoothedFemSolver::solve(const Problem &problem,
             const auto matrix_end = std::chrono::steady_clock::now();
             Eigen::VectorXd rhs = target_load_factor * problem.force - r;
             constraints.apply_dirichlet(problem.bc, uu, target_load_factor, k, rhs);
+            const int pinned_rows = regularize_near_zero_rows(k, rhs);
+            if (pinned_rows > 0 && problem.problem_type == "cook" && step == 1 && iter == 1)
+            {
+                std::cout << "Pinned " << pinned_rows
+                          << " near-zero tangent rows for cook at the first Newton step.\n";
+            }
             if (step == 1 && iter <= 2 &&
                 dynamic_cast<const CellSmoothedDomainAssembler *>(&assembler) != nullptr)
             {

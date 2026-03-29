@@ -5,6 +5,7 @@
 #include <Eigen/IterativeLinearSolvers>
 #include <Eigen/LU>
 #include <Eigen/SparseLU>
+#include <Eigen/SparseQR>
 #ifdef USE_EIGEN_UMFPACK
 #if __has_include(<Eigen/UmfPackSupport>)
 #include <Eigen/UmfPackSupport>
@@ -27,6 +28,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_map>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -67,7 +69,7 @@ bool is_acceptable_solution(const SparseMatrix &a,
 
 bool is_nonlinear_scenario(Scenario scenario)
 {
-    return scenario == Scenario::NonlinearPatch || scenario == Scenario::BendingBlock;
+    return scenario != Scenario::LinearPatch;
 }
 
 nonlinear_esfem_t6::LinearSolverType to_shared_solver_type(LinearSolverType solver)
@@ -333,11 +335,14 @@ void write_csfem_bending_failure_dump(const Model &model,
 }
 
 Eigen::VectorXd solve_with_fresh_sparse_lu(SparseMatrix a, const Eigen::VectorXd &b);
+Eigen::VectorXd solve_with_umfpack_fallback(const SparseMatrix &a, const Eigen::VectorXd &b);
+Eigen::VectorXd solve_with_sparse_qr_fallback(const SparseMatrix &a, const Eigen::VectorXd &b);
 Eigen::VectorXd solve_with_iterative_fallback(const SparseMatrix &a,
                                               const Eigen::VectorXd &b,
                                               int maxiter,
                                               double tolerance);
 Eigen::VectorXd solve_with_dense_fallback(const SparseMatrix &a, const Eigen::VectorXd &b);
+int regularize_near_zero_rows(SparseMatrix &a, Eigen::VectorXd &b);
 
 class SparseDirectSolverCache
 {
@@ -411,24 +416,50 @@ public:
             analyzed_ = false;
             try
             {
+                return solve_with_umfpack_fallback(a, b);
+            }
+            catch (const std::runtime_error &)
+            {
+            }
+            try
+            {
                 return solve_with_fresh_sparse_lu(a, b);
             }
             catch (const std::runtime_error &)
             {
                 try
                 {
-                    return solve_with_iterative_fallback(a,
-                                                         b,
-                                                         std::max(options.iterative_maxiter, 4000),
-                                                         std::min(options.iterative_tolerance, 1.0e-10));
+                    return solve_with_sparse_qr_fallback(a, b);
                 }
                 catch (const std::runtime_error &)
                 {
-                    return solve_with_dense_fallback(a, b);
+                    try
+                    {
+                        return solve_with_iterative_fallback(a,
+                                                             b,
+                                                             std::max(options.iterative_maxiter, 4000),
+                                                             std::min(options.iterative_tolerance, 1.0e-10));
+                    }
+                    catch (const std::runtime_error &)
+                    {
+                        return solve_with_dense_fallback(a, b);
+                    }
                 }
             }
         }
-        return sparse_lu_.solve(b);
+        const Eigen::VectorXd x = sparse_lu_.solve(b);
+        if (is_acceptable_solution(a, b, x))
+        {
+            return x;
+        }
+        try
+        {
+            return solve_with_umfpack_fallback(a, b);
+        }
+        catch (const std::runtime_error &)
+        {
+        }
+        return x;
     }
 
 private:
@@ -517,6 +548,78 @@ Eigen::VectorXd solve_with_fresh_sparse_lu(SparseMatrix a, const Eigen::VectorXd
             }
         }
     }
+    throw std::runtime_error("Failed to factorize sparse tangent matrix");
+}
+
+Eigen::VectorXd solve_with_umfpack_fallback(const SparseMatrix &a, const Eigen::VectorXd &b)
+{
+#ifdef USE_EIGEN_UMFPACK
+    Eigen::UmfPackLU<SparseMatrix> umfpack;
+    umfpack.compute(a);
+    if (umfpack.info() == Eigen::Success)
+    {
+        const Eigen::VectorXd x = umfpack.solve(b);
+        if (umfpack.info() == Eigen::Success && x.allFinite())
+        {
+            return x;
+        }
+    }
+#endif
+    throw std::runtime_error("Failed to factorize sparse tangent matrix");
+}
+
+Eigen::VectorXd solve_with_sparse_qr_fallback(const SparseMatrix &a, const Eigen::VectorXd &b)
+{
+    constexpr double kShifts[] = {0.0, 1.0e-12, 1.0e-10, 1.0e-8, 1.0e-6, 1.0e-4, 1.0e-2};
+    Eigen::VectorXd best_x;
+    double best_residual = std::numeric_limits<double>::infinity();
+
+    for (const double shift : kShifts)
+    {
+        SparseMatrix trial = a;
+        if (shift > 0.0)
+        {
+            trial.diagonal().array() += shift;
+        }
+        trial.makeCompressed();
+
+        Eigen::SparseQR<SparseMatrix, Eigen::COLAMDOrdering<int>> qr;
+        qr.compute(trial);
+        if (qr.info() != Eigen::Success)
+        {
+            continue;
+        }
+
+        const Eigen::VectorXd x = qr.solve(b);
+        if (qr.info() != Eigen::Success || !x.allFinite())
+        {
+            continue;
+        }
+
+        const Eigen::VectorXd residual = a * x - b;
+        if (!residual.allFinite())
+        {
+            continue;
+        }
+
+        const double norm = residual.norm();
+        if (norm < best_residual)
+        {
+            best_residual = norm;
+            best_x = x;
+        }
+
+        if (is_acceptable_solution(a, b, x))
+        {
+            return x;
+        }
+    }
+
+    if (best_x.size() != 0)
+    {
+        return best_x;
+    }
+
     throw std::runtime_error("Failed to factorize sparse tangent matrix");
 }
 
@@ -688,6 +791,38 @@ Eigen::VectorXd solve_with_dense_fallback(const SparseMatrix &a, const Eigen::Ve
         return best_x;
     }
     throw std::runtime_error("Failed to factorize sparse tangent matrix");
+}
+
+int regularize_near_zero_rows(SparseMatrix &a, Eigen::VectorXd &b)
+{
+    constexpr double kRowTol = 1.0e-14;
+    std::vector<int> pinned_rows;
+    pinned_rows.reserve(32);
+
+    for (int row = 0; row < a.rows(); ++row)
+    {
+        double row_abs_sum = 0.0;
+        for (SparseMatrix::InnerIterator it(a, row); it; ++it)
+        {
+            row_abs_sum += std::abs(it.value());
+        }
+        if (row_abs_sum <= kRowTol)
+        {
+            pinned_rows.push_back(row);
+        }
+    }
+
+    for (const int row : pinned_rows)
+    {
+        a.coeffRef(row, row) = 1.0;
+        b(row) = 0.0;
+    }
+
+    if (!pinned_rows.empty())
+    {
+        a.makeCompressed();
+    }
+    return static_cast<int>(pinned_rows.size());
 }
 
 double triangle_area_from_vertices(const Eigen::MatrixXd &coords)
@@ -1196,6 +1331,20 @@ Eigen::MatrixXd nodal_matrix(const Eigen::VectorXd &uu)
     return u;
 }
 
+int local_edge_index_from_corner_nodes(const std::array<int, 6> &element, int node_a, int node_b)
+{
+    for (int edge = 0; edge < 3; ++edge)
+    {
+        const int edge_a = element[static_cast<std::size_t>(edge)];
+        const int edge_b = element[static_cast<std::size_t>((edge + 1) % 3)];
+        if ((edge_a == node_a && edge_b == node_b) || (edge_a == node_b && edge_b == node_a))
+        {
+            return edge;
+        }
+    }
+    throw std::runtime_error("Failed to match a shared T6 edge while building ESFEM support data");
+}
+
 SupportData build_cell_support_data(const Model &model, int elem_index)
 {
     const auto &element = model.mesh.elements[static_cast<std::size_t>(elem_index)];
@@ -1429,52 +1578,86 @@ SupportData build_edge_support_data(const Model &model,
         }
     }
 
-    std::vector<int> node_sc;
     std::string element_type;
     QuadratureRule wi;
+    std::vector<int> reordered_nodes;
     if (nc == 1)
     {
-        node_sc = {0, 1, 2, 3, 4, 5};
+        reordered_nodes.assign(nodl.begin(), nodl.end());
         element_type = "T6";
         wi = triangle_rule(nonlinear ? 4 : 2);
     }
     else
     {
+        const auto &elem1 = model.mesh.elements[static_cast<std::size_t>(target.elem1)];
+        const auto &elem2 = model.mesh.elements[static_cast<std::size_t>(target.elem2)];
+        const int shared_local_a = target.local_edge1;
+        const int shared_local_b = (target.local_edge1 + 1) % 3;
+        const int opposite_local = (target.local_edge1 + 2) % 3;
+
+        const int shared_a = elem1[static_cast<std::size_t>(shared_local_a)];
+        const int shared_b = elem1[static_cast<std::size_t>(shared_local_b)];
+        const int opposite1 = elem1[static_cast<std::size_t>(opposite_local)];
+        const int mid_shared = elem1[static_cast<std::size_t>(3 + target.local_edge1)];
+        const int mid_b_opp1 = elem1[static_cast<std::size_t>(3 + ((target.local_edge1 + 1) % 3))];
+        const int mid_opp1_a = elem1[static_cast<std::size_t>(3 + ((target.local_edge1 + 2) % 3))];
+
+        int opposite2 = -1;
+        for (int local = 0; local < 3; ++local)
+        {
+            const int node = elem2[static_cast<std::size_t>(local)];
+            if (node != shared_a && node != shared_b)
+            {
+                opposite2 = node;
+                break;
+            }
+        }
+        if (opposite2 < 0)
+        {
+            throw std::runtime_error("Failed to locate the opposite node of a shared edge in Cook ESFEM support data");
+        }
+
+        const int edge_a_opp2 = local_edge_index_from_corner_nodes(elem2, shared_a, opposite2);
+        const int edge_opp2_b = local_edge_index_from_corner_nodes(elem2, opposite2, shared_b);
+        const int mid_a_opp2 = elem2[static_cast<std::size_t>(3 + edge_a_opp2)];
+        const int mid_opp2_b = elem2[static_cast<std::size_t>(3 + edge_opp2_b)];
+
         if (target.local_edge1 == 0)
         {
-            node_sc = {0, 6, 1, 2, 8, 7, 4, 5, 3};
+            reordered_nodes = {shared_a, opposite2, shared_b, opposite1,
+                               mid_a_opp2, mid_opp2_b, mid_b_opp1, mid_opp1_a, mid_shared};
         }
         else if (target.local_edge1 == 1)
         {
-            node_sc = {0, 1, 6, 2, 3, 7, 8, 5, 4};
+            reordered_nodes = {opposite1, shared_a, opposite2, shared_b,
+                               mid_opp1_a, mid_a_opp2, mid_opp2_b, mid_b_opp1, mid_shared};
         }
         else
         {
-            node_sc = {0, 1, 2, 6, 3, 4, 7, 8, 5};
+            reordered_nodes = {shared_b, opposite1, shared_a, opposite2,
+                               mid_b_opp1, mid_opp1_a, mid_a_opp2, mid_opp2_b, mid_shared};
         }
+
         element_type = "Q9";
         wi = gauss_quad_rule(nonlinear ? 3 : 2);
     }
 
-    std::vector<int> reordered_nodes;
-    reordered_nodes.reserve(node_sc.size());
-    for (const int idx : node_sc)
+    std::unordered_map<int, int> support_pos;
+    support_pos.reserve(nodl.size());
+    for (int i = 0; i < static_cast<int>(nodl.size()); ++i)
     {
-        reordered_nodes.push_back(nodl[static_cast<std::size_t>(idx)]);
+        support_pos.emplace(nodl[static_cast<std::size_t>(i)], i);
     }
 
     Eigen::MatrixXd gcoord(reordered_nodes.size(), 2);
+    Eigen::MatrixXd rfx(fx.rows(), reordered_nodes.size());
+    Eigen::MatrixXd rfy(fy.rows(), reordered_nodes.size());
     for (int i = 0; i < static_cast<int>(reordered_nodes.size()); ++i)
     {
         gcoord.row(i) = model.mesh.nodes.row(reordered_nodes[static_cast<std::size_t>(i)]);
-    }
-
-    Eigen::MatrixXd rfx(fx.rows(), node_sc.size());
-    Eigen::MatrixXd rfy(fy.rows(), node_sc.size());
-    for (int i = 0; i < static_cast<int>(node_sc.size()); ++i)
-    {
-        rfx.col(i) = fx.col(node_sc[static_cast<std::size_t>(i)]);
-        rfy.col(i) = fy.col(node_sc[static_cast<std::size_t>(i)]);
+        const int src = support_pos.at(reordered_nodes[static_cast<std::size_t>(i)]);
+        rfx.col(i) = fx.col(src);
+        rfy.col(i) = fy.col(src);
     }
 
     Eigen::MatrixXd ni = Eigen::MatrixXd::Zero(nonlinear ? 5 : 3, gcoord.rows());
@@ -1907,7 +2090,7 @@ Result solve_nonlinear_patch(const Model &model, const NewtonOptions &options)
             }
             else if (model.method == Method::CSFEM)
             {
-                const QuadratureRule qr = triangle_rule(2);
+                const QuadratureRule qr = triangle_rule(3);
                 const std::size_t triplet_estimate = cell_supports.size() * 144;
                 for (auto &buffer : triplet_buffers)
                 {
@@ -2042,6 +2225,11 @@ Result solve_nonlinear_patch(const Model &model, const NewtonOptions &options)
             else
             {
                 apply_nonlinear_bc(model.bc, uu, scale, k, rhs);
+            }
+            const int pinned_rows = regularize_near_zero_rows(k, rhs);
+            if (pinned_rows > 0 && model.scenario == Scenario::Cook && istp == 1 && niter == 1)
+            {
+                std::cout << "Pinned " << pinned_rows << " near-zero tangent rows for cook at the first Newton step.\n";
             }
             if (model.method == Method::CSFEM && model.scenario == Scenario::BendingBlock && !cell_supports.empty())
             {

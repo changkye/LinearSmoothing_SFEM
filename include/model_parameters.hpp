@@ -52,7 +52,7 @@ inline Eigen::Vector2i default_num_els_vector() { return Eigen::Vector2i(default
 // Default material values shared across problems unless a case-specific
 // override is added below.
 inline constexpr LinearElasticMaterial default_linear_material{1.0, 0.3};
-inline constexpr NeoHookeanMaterial default_nonlinear_material{0.6, 1.95};
+inline constexpr NeoHookeanMaterial default_nonlinear_material{0.6, 100};
 
 inline LinearElasticMaterial linear_material_for(std::string_view problem_type)
 {
@@ -61,7 +61,18 @@ inline LinearElasticMaterial linear_material_for(std::string_view problem_type)
     return material;
 }
 
-inline NeoHookeanMaterial nonlinear_material_for(std::string_view /*problem_type*/) { return default_nonlinear_material; }
+inline NeoHookeanMaterial nonlinear_material_for(std::string_view problem_type)
+{
+    if (problem_type == "cantilever" || problem_type == "cook")
+    {
+        const LinearElasticMaterial linear = linear_material_for(problem_type);
+        const double mu = linear.young / (2.0 * (1.0 + linear.poisson));
+        const double lambda_like =
+            linear.young * linear.poisson / ((1.0 + linear.poisson) * (1.0 - 2.0 * linear.poisson));
+        return NeoHookeanMaterial{mu, lambda_like};
+    }
+    return default_nonlinear_material;
+}
 
 // 5) ES-FEM Stabilization / Quadrature Parameters
 inline constexpr int esfem_edge_boundary_ng = 3;
