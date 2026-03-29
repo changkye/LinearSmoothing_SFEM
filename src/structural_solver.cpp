@@ -6,7 +6,13 @@
 #include <Eigen/LU>
 #include <Eigen/SparseLU>
 #ifdef USE_EIGEN_UMFPACK
+#if __has_include(<Eigen/UmfPackSupport>)
+#include <Eigen/UmfPackSupport>
+#elif __has_include(<unsupported/Eigen/UmfPackSupport>)
 #include <unsupported/Eigen/UmfPackSupport>
+#else
+#error "USE_EIGEN_UMFPACK is set, but Eigen UmfPackSupport header was not found"
+#endif
 #endif
 
 #include <algorithm>
