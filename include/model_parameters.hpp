@@ -114,6 +114,7 @@ namespace model_parameters
     inline constexpr char default_structural_linear_solver[] = "sparselu";
     inline constexpr int default_structural_iterative_maxiter = 2000;
     inline constexpr double default_structural_iterative_tolerance = 1.0e-10;
+    // why esfem has its own default linear solver and others?
     inline constexpr char default_esfem_linear_solver[] = "sparselu";
     inline constexpr int default_esfem_iterative_maxiter = 2000;
     inline constexpr double default_esfem_iterative_tolerance = 1.0e-10;

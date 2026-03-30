@@ -245,11 +245,14 @@ namespace
 
         if (method == Method::ESFEM || method == Method::CSFEM)
         {
-            newton.linear_solver = parse_solver_type(model_parameters::default_large_problem_linear_solver);
+            newton.linear_solver = parse_solver_type(
+                model_parameters::default_large_problem_linear_solver);
             newton.iterative_maxiter =
-                std::max(newton.iterative_maxiter, model_parameters::default_large_problem_iterative_maxiter);
+                std::max(newton.iterative_maxiter,
+                         model_parameters::default_large_problem_iterative_maxiter);
             newton.iterative_tolerance =
-                std::max(newton.iterative_tolerance, model_parameters::default_large_problem_iterative_tolerance);
+                std::max(newton.iterative_tolerance,
+                         model_parameters::default_large_problem_iterative_tolerance);
         }
     }
 
@@ -386,14 +389,17 @@ int main(int argc, char **argv)
         newton.maxiter = model_parameters::default_maxiter;
         newton.tolerance = model_parameters::default_tolerance;
         newton.residual_tolerance = model_parameters::default_residual_tolerance;
-        newton.line_search_max_backtracks = model_parameters::default_line_search_max_backtracks;
+        newton.line_search_max_backtracks =
+            model_parameters::default_line_search_max_backtracks;
         newton.line_search_reduction = model_parameters::default_line_search_reduction;
         newton.line_search_min_alpha = model_parameters::default_line_search_min_alpha;
         newton.adaptive_load_stepping = model_parameters::default_adaptive_load_stepping;
         newton.max_step_cuts = model_parameters::default_max_step_cuts;
-        newton.linear_solver = parse_solver_type(model_parameters::default_structural_linear_solver);
+        newton.linear_solver =
+            parse_solver_type(model_parameters::default_structural_linear_solver);
         newton.iterative_maxiter = model_parameters::default_structural_iterative_maxiter;
-        newton.iterative_tolerance = model_parameters::default_structural_iterative_tolerance;
+        newton.iterative_tolerance =
+            model_parameters::default_structural_iterative_tolerance;
         newton.compute_exact_solution = model_parameters::default_compute_exact_solution;
         std::filesystem::path output_dir = std::filesystem::path("res");
         OutputOptions output_options;
@@ -411,7 +417,8 @@ int main(int argc, char **argv)
                 {
                     if (i + 1 >= args.size())
                     {
-                        throw std::invalid_argument(std::string("Missing value for ") + name);
+                        throw std::invalid_argument(
+                            std::string("Missing value for ") + name);
                     }
                     ++i;
                     return args[i];
@@ -520,7 +527,8 @@ int main(int argc, char **argv)
         }
 #endif
         NewtonOptions large_problem_tuned = newton;
-        apply_large_problem_tuning(fixed_method(), scenario, num_els, large_problem_tuned);
+        apply_large_problem_tuning(fixed_method(), scenario, num_els,
+                                   large_problem_tuned);
         if (!solver_overridden)
         {
             newton.linear_solver = large_problem_tuned.linear_solver;
@@ -537,9 +545,11 @@ int main(int argc, char **argv)
         for (const Method method : methods)
         {
             const auto total_start = std::chrono::steady_clock::now();
-            const StructuralProblem problem = StructuralProblem::make_patch_test(method, scenario, num_els);
+            const StructuralProblem problem = StructuralProblem::make_patch_test(
+                method, scenario, num_els);
             const auto solver = make_solver(method);
-            const std::filesystem::path run_dir = output_dir / scenario_name(scenario) / method_name(method);
+            const std::filesystem::path run_dir =
+                output_dir / scenario_name(scenario) / method_name(method);
             std::filesystem::create_directories(run_dir);
             if (newton.debug_csfem_bending && newton.debug_output_dir.empty())
             {
@@ -565,7 +575,8 @@ int main(int argc, char **argv)
                                        problem.data().num_els,
                                        result,
                                        problem.data().mesh,
-                                       problem.data().has_exact_solution && newton.compute_exact_solution,
+                                       problem.data().has_exact_solution &&
+                                           newton.compute_exact_solution,
                                        output_options);
             }
 
@@ -586,8 +597,10 @@ int main(int argc, char **argv)
                 record.write_postprocess = output_options.write_postprocess;
                 record.relative_error = result.relative_error;
                 record.strain_energy = result.strain_energy;
-                record.solve_wall_time_sec = benchmark::seconds_between(solve_start, solve_end);
-                record.total_wall_time_sec = benchmark::seconds_between(total_start, total_end);
+                record.solve_wall_time_sec =
+                    benchmark::seconds_between(solve_start, solve_end);
+                record.total_wall_time_sec =
+                    benchmark::seconds_between(total_start, total_end);
                 record.peak_rss_mb = benchmark::peak_rss_mb();
                 const std::filesystem::path log_path =
                     benchmark_log.value_or(run_dir / (base_name + "_benchmark.csv"));
