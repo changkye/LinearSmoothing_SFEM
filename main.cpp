@@ -12,352 +12,354 @@
 #include <string>
 #include <vector>
 
+using namespace sfem;
+
 namespace
 {
 
-fem::Method fixed_method()
-{
+    Method fixed_method()
+    {
 #if defined(FIXED_METHOD_CSFEM)
-    return fem::Method::CSFEM;
+        return Method::CSFEM;
 #elif defined(FIXED_METHOD_ESFEM)
-    return fem::Method::ESFEM;
+        return Method::ESFEM;
 #else
-    throw std::invalid_argument("No fixed method is configured for this build");
+        throw std::invalid_argument("No fixed method is configured for this build");
 #endif
-}
-
-struct OutputOptions
-{
-    bool write_vtu = model_parameters::default_write_vtu;
-    bool write_postprocess = model_parameters::default_write_postprocess;
-    bool write_benchmark = model_parameters::default_write_benchmark;
-};
-
-fem::LinearSolverType parse_solver_type(const std::string &name)
-{
-    if (name == "sparselu")
-    {
-        return fem::LinearSolverType::SparseLU;
     }
-    if (name == "bicgstab")
-    {
-        return fem::LinearSolverType::BiCGSTAB;
-    }
-    if (name == "umfpack")
-    {
-        return fem::LinearSolverType::UmfPack;
-    }
-    throw std::invalid_argument("Unsupported solver type: " + name);
-}
 
-Eigen::Vector2i parse_num_els_value(const std::string &value)
-{
-    const auto xpos = value.find_first_of("xX,");
-    if (xpos == std::string::npos)
+    struct OutputOptions
     {
-        const int n = std::stoi(value);
-        if (n <= 0)
+        bool write_vtu = model_parameters::default_write_vtu;
+        bool write_postprocess = model_parameters::default_write_postprocess;
+        bool write_benchmark = model_parameters::default_write_benchmark;
+    };
+
+    LinearSolverType parse_solver_type(const std::string &name)
+    {
+        if (name == "sparselu")
         {
-            throw std::invalid_argument("num-els must be positive");
+            return LinearSolverType::SparseLU;
         }
-        return Eigen::Vector2i::Constant(n);
+        if (name == "bicgstab")
+        {
+            return LinearSolverType::BiCGSTAB;
+        }
+        if (name == "umfpack")
+        {
+            return LinearSolverType::UmfPack;
+        }
+        throw std::invalid_argument("Unsupported solver type: " + name);
     }
 
-    const std::string xpart = value.substr(0, xpos);
-    const std::string ypart = value.substr(xpos + 1);
-    if (xpart.empty() || ypart.empty())
+    Eigen::Vector2i parse_num_els_value(const std::string &value)
     {
-        throw std::invalid_argument("num-els must be formatted as n or nxm");
+        const auto xpos = value.find_first_of("xX,");
+        if (xpos == std::string::npos)
+        {
+            const int n = std::stoi(value);
+            if (n <= 0)
+            {
+                throw std::invalid_argument("num-els must be positive");
+            }
+            return Eigen::Vector2i::Constant(n);
+        }
+
+        const std::string xpart = value.substr(0, xpos);
+        const std::string ypart = value.substr(xpos + 1);
+        if (xpart.empty() || ypart.empty())
+        {
+            throw std::invalid_argument("num-els must be formatted as n or nxm");
+        }
+
+        const int nx = std::stoi(xpart);
+        const int ny = std::stoi(ypart);
+        if (nx <= 0 || ny <= 0)
+        {
+            throw std::invalid_argument("num-els entries must be positive");
+        }
+        return Eigen::Vector2i(nx, ny);
     }
 
-    const int nx = std::stoi(xpart);
-    const int ny = std::stoi(ypart);
-    if (nx <= 0 || ny <= 0)
+    void print_help()
     {
-        throw std::invalid_argument("num-els entries must be positive");
-    }
-    return Eigen::Vector2i(nx, ny);
-}
-
-void print_help()
-{
 #if defined(FIXED_METHOD_CSFEM)
-    constexpr const char *exe_name = "./csfem";
+        constexpr const char *exe_name = "./csfem";
 #elif defined(FIXED_METHOD_ESFEM)
-    constexpr const char *exe_name = "./esfem";
+        constexpr const char *exe_name = "./esfem";
 #else
-    constexpr const char *exe_name = "./sfem";
+        constexpr const char *exe_name = "./sfem";
 #endif
-    std::cout
-        << "Usage:\n"
-        << "  " << exe_name << " [linear_patch|nonlinear_patch|cantilever|bending_block|cook] [options]\n\n"
-        << "Options:\n"
-        << "  --num-els <n|nxm>\n"
-        << "  --num-els-x <n>\n"
-        << "  --num-els-y <m>\n"
-        << "  --output-dir <path>\n"
-        << "  --nstep <value>\n"
-        << "  --maxiter <value>\n"
-        << "  --tol <value>\n"
-        << "  --solver <sparselu|bicgstab|umfpack>\n"
-        << "  --iter-maxiter <value>\n"
-        << "  --iter-tol <value>\n"
-        << "  --no-exact\n"
-        << "  --no-vtu\n"
-        << "  --summary-only\n"
-        << "  --benchmark\n"
-        << "  --benchmark-log <path>\n"
-        << "  --debug-csfem-bending\n"
-        << "  --help\n\n"
-        << "Notes:\n"
-        << "  cook reads data/Cook.msh directly; generate it first with data/run_mesh.sh.\n";
-}
-
-std::string solver_name(fem::LinearSolverType solver)
-{
-    switch (solver)
-    {
-    case fem::LinearSolverType::SparseLU:
-        return "sparselu";
-    case fem::LinearSolverType::BiCGSTAB:
-        return "bicgstab";
-    case fem::LinearSolverType::UmfPack:
-        return "umfpack";
-    }
-    throw std::invalid_argument("Unknown solver type");
-}
-
-std::string method_prefix(fem::Method method)
-{
-    switch (method)
-    {
-    case fem::Method::FEM:
-        return "FEM";
-    case fem::Method::CSFEM:
-        return "CSFEM";
-    case fem::Method::ESFEM:
-        return "ESFEM";
-    }
-    throw std::invalid_argument("Unknown method for output prefix");
-}
-
-std::string result_base_name(fem::Method method,
-                             fem::Scenario scenario,
-                             const Eigen::Vector2i &num_els)
-{
-    if (scenario == fem::Scenario::Cook)
-    {
-        return method_prefix(method) + "_cook";
-    }
-    return method_prefix(method) + "_" + fem::scenario_name(scenario) + "_" +
-           std::to_string(num_els(0)) + "x" + std::to_string(num_els(1));
-}
-
-void write_res_json(const std::filesystem::path &output_dir,
-                    const std::string &base_name,
-                    const fem::Mesh &mesh,
-                    const fem::Result &result)
-{
-    const std::filesystem::path json_file = output_dir / (base_name + "_res.json");
-    std::ofstream out(json_file);
-    if (!out)
-    {
-        throw std::runtime_error("Failed to open json result: " + json_file.string());
+        std::cout
+            << "Usage:\n"
+            << "  " << exe_name << " [linear_patch|nonlinear_patch|cantilever|bending_block|cook] [options]\n\n"
+            << "Options:\n"
+            << "  --num-els <n|nxm>\n"
+            << "  --num-els-x <n>\n"
+            << "  --num-els-y <m>\n"
+            << "  --output-dir <path>\n"
+            << "  --nstep <value>\n"
+            << "  --maxiter <value>\n"
+            << "  --tol <value>\n"
+            << "  --solver <sparselu|bicgstab|umfpack>\n"
+            << "  --iter-maxiter <value>\n"
+            << "  --iter-tol <value>\n"
+            << "  --no-exact\n"
+            << "  --no-vtu\n"
+            << "  --summary-only\n"
+            << "  --benchmark\n"
+            << "  --benchmark-log <path>\n"
+            << "  --debug-csfem-bending\n"
+            << "  --help\n\n"
+            << "Notes:\n"
+            << "  cook reads data/Cook.msh directly; generate it first with data/run_mesh.sh.\n";
     }
 
-    out << std::setprecision(16);
-    out << "{\n";
-    out << "  \"name\": \"" << base_name << "\",\n";
-    out << "  \"nodes\": [\n";
-    for (int i = 0; i < mesh.nodes.rows(); ++i)
+    std::string solver_name(LinearSolverType solver)
     {
-        out << "    {\"id\": " << i + 1
-            << ", \"x\": " << mesh.nodes(i, 0)
-            << ", \"y\": " << mesh.nodes(i, 1) << "}";
-        out << (i + 1 == mesh.nodes.rows() ? "\n" : ",\n");
-    }
-    out << "  ],\n";
-
-    out << "  \"elements\": [\n";
-    for (std::size_t i = 0; i < mesh.elements.size(); ++i)
-    {
-        out << "    {\"id\": " << i + 1 << ", \"connectivity\": [";
-        for (int a = 0; a < 6; ++a)
+        switch (solver)
         {
-            out << mesh.elements[i][static_cast<std::size_t>(a)] + 1;
-            out << (a == 5 ? "" : ", ");
+        case LinearSolverType::SparseLU:
+            return "sparselu";
+        case LinearSolverType::BiCGSTAB:
+            return "bicgstab";
+        case LinearSolverType::UmfPack:
+            return "umfpack";
         }
-        out << "]}";
-        out << (i + 1 == mesh.elements.size() ? "\n" : ",\n");
+        throw std::invalid_argument("Unknown solver type");
     }
-    out << "  ],\n";
 
-    out << "  \"displacement\": [\n";
-    for (int i = 0; i < result.nodal_u.rows(); ++i)
+    std::string method_prefix(Method method)
     {
-        out << "    {\"id\": " << i + 1
-            << ", \"ux\": " << result.nodal_u(i, 0)
-            << ", \"uy\": " << result.nodal_u(i, 1) << "}";
-        out << (i + 1 == result.nodal_u.rows() ? "\n" : ",\n");
+        switch (method)
+        {
+        case Method::FEM:
+            return "FEM";
+        case Method::CSFEM:
+            return "CSFEM";
+        case Method::ESFEM:
+            return "ESFEM";
+        }
+        throw std::invalid_argument("Unknown method for output prefix");
     }
-    out << "  ]\n";
-    out << "}\n";
-}
 
-void apply_problem_specific_newton_tuning(fem::Method method,
-                                          fem::Scenario scenario,
-                                          const Eigen::Vector2i &num_els,
-                                          fem::NewtonOptions &newton)
-{
-    if (method != fem::Method::CSFEM || scenario != fem::Scenario::BendingBlock)
+    std::string result_base_name(Method method,
+                                 Scenario scenario,
+                                 const Eigen::Vector2i &num_els)
     {
-        return;
+        if (scenario == Scenario::Cook)
+        {
+            return method_prefix(method) + "_cook";
+        }
+        return method_prefix(method) + "_" + scenario_name(scenario) + "_" +
+               std::to_string(num_els(0)) + "x" + std::to_string(num_els(1));
     }
 
-    // Match the original MATLAB CS-FEM bending-block driver as closely as possible:
-    // fixed-load increments, plain Newton updates, and convergence based on du/u.
-    newton.nstep = std::max(newton.nstep, 100);
-    newton.maxiter = 80;
-    newton.tolerance = std::min(newton.tolerance, 1.0e-9);
-    newton.residual_tolerance = std::numeric_limits<double>::infinity();
-    newton.line_search_max_backtracks = 0;
-    newton.adaptive_load_stepping = false;
-    newton.allow_step_growth = false;
-    newton.aggressive_stagnation_control = false;
-}
+    void write_res_json(const std::filesystem::path &output_dir,
+                        const std::string &base_name,
+                        const Mesh &mesh,
+                        const Result &result)
+    {
+        const std::filesystem::path json_file = output_dir / (base_name + "_res.json");
+        std::ofstream out(json_file);
+        if (!out)
+        {
+            throw std::runtime_error("Failed to open json result: " + json_file.string());
+        }
 
-void apply_large_problem_tuning(fem::Method method,
-                                fem::Scenario scenario,
+        out << std::setprecision(16);
+        out << "{\n";
+        out << "  \"name\": \"" << base_name << "\",\n";
+        out << "  \"nodes\": [\n";
+        for (int i = 0; i < mesh.nodes.rows(); ++i)
+        {
+            out << "    {\"id\": " << i + 1
+                << ", \"x\": " << mesh.nodes(i, 0)
+                << ", \"y\": " << mesh.nodes(i, 1) << "}";
+            out << (i + 1 == mesh.nodes.rows() ? "\n" : ",\n");
+        }
+        out << "  ],\n";
+
+        out << "  \"elements\": [\n";
+        for (std::size_t i = 0; i < mesh.elements.size(); ++i)
+        {
+            out << "    {\"id\": " << i + 1 << ", \"connectivity\": [";
+            for (int a = 0; a < 6; ++a)
+            {
+                out << mesh.elements[i][static_cast<std::size_t>(a)] + 1;
+                out << (a == 5 ? "" : ", ");
+            }
+            out << "]}";
+            out << (i + 1 == mesh.elements.size() ? "\n" : ",\n");
+        }
+        out << "  ],\n";
+
+        out << "  \"displacement\": [\n";
+        for (int i = 0; i < result.nodal_u.rows(); ++i)
+        {
+            out << "    {\"id\": " << i + 1
+                << ", \"ux\": " << result.nodal_u(i, 0)
+                << ", \"uy\": " << result.nodal_u(i, 1) << "}";
+            out << (i + 1 == result.nodal_u.rows() ? "\n" : ",\n");
+        }
+        out << "  ]\n";
+        out << "}\n";
+    }
+
+    void apply_problem_specific_newton_tuning(Method method,
+                                              Scenario scenario,
+                                              const Eigen::Vector2i &num_els,
+                                              NewtonOptions &newton)
+    {
+        if (method != Method::CSFEM || scenario != Scenario::BendingBlock)
+        {
+            return;
+        }
+
+        // Match the original MATLAB CS-FEM bending-block driver as closely as possible:
+        // fixed-load increments, plain Newton updates, and convergence based on du/u.
+        newton.nstep = std::max(newton.nstep, 100);
+        newton.maxiter = 80;
+        newton.tolerance = std::min(newton.tolerance, 1.0e-9);
+        newton.residual_tolerance = std::numeric_limits<double>::infinity();
+        newton.line_search_max_backtracks = 0;
+        newton.adaptive_load_stepping = false;
+        newton.allow_step_growth = false;
+        newton.aggressive_stagnation_control = false;
+    }
+
+    void apply_large_problem_tuning(Method method,
+                                    Scenario scenario,
+                                    const Eigen::Vector2i &num_els,
+                                    NewtonOptions &newton)
+    {
+        if (num_els.prod() < model_parameters::default_large_problem_element_threshold)
+        {
+            return;
+        }
+
+        if (scenario != Scenario::NonlinearPatch && scenario != Scenario::BendingBlock)
+        {
+            return;
+        }
+
+        if (method == Method::ESFEM || method == Method::CSFEM)
+        {
+            newton.linear_solver = parse_solver_type(model_parameters::default_large_problem_linear_solver);
+            newton.iterative_maxiter =
+                std::max(newton.iterative_maxiter, model_parameters::default_large_problem_iterative_maxiter);
+            newton.iterative_tolerance =
+                std::max(newton.iterative_tolerance, model_parameters::default_large_problem_iterative_tolerance);
+        }
+    }
+
+    void write_matlab_bundle(const std::filesystem::path &output_dir,
+                             const std::string &base_name,
+                             const Mesh &mesh,
+                             const Result &result,
+                             bool has_exact_solution)
+    {
+        const std::filesystem::path bundle_file = output_dir / (base_name + "_result.m");
+        std::ofstream out(bundle_file);
+        if (!out)
+        {
+            throw std::runtime_error("Failed to open MATLAB bundle: " + bundle_file.string());
+        }
+
+        out << std::setprecision(16);
+        out << "% Auto-generated result bundle\n";
+        out << "result.name = '" << base_name << "';\n";
+
+        out << "result.nodes = [\n";
+        for (int i = 0; i < mesh.nodes.rows(); ++i)
+        {
+            out << "    " << i + 1 << ", " << mesh.nodes(i, 0) << ", " << mesh.nodes(i, 1) << ";\n";
+        }
+        out << "];\n";
+
+        out << "result.elements = [\n";
+        for (std::size_t i = 0; i < mesh.elements.size(); ++i)
+        {
+            out << "    " << i + 1;
+            for (int a = 0; a < 6; ++a)
+            {
+                out << ", " << mesh.elements[i][static_cast<std::size_t>(a)] + 1;
+            }
+            out << ";\n";
+        }
+        out << "];\n";
+
+        if (has_exact_solution && result.exact_u.rows() == result.nodal_u.rows())
+        {
+            out << "result.nodal_result_columns = {'node','x','y','ux','uy','ux_exact','uy_exact','ux_error','uy_error'};\n";
+            out << "result.nodal_result = [\n";
+            for (int i = 0; i < result.nodal_u.rows(); ++i)
+            {
+                out << "    " << i + 1
+                    << ", " << mesh.nodes(i, 0)
+                    << ", " << mesh.nodes(i, 1)
+                    << ", " << result.nodal_u(i, 0)
+                    << ", " << result.nodal_u(i, 1)
+                    << ", " << result.exact_u(i, 0)
+                    << ", " << result.exact_u(i, 1)
+                    << ", " << (result.nodal_u(i, 0) - result.exact_u(i, 0))
+                    << ", " << (result.nodal_u(i, 1) - result.exact_u(i, 1))
+                    << ";\n";
+            }
+        }
+        else
+        {
+            out << "result.nodal_result_columns = {'node','x','y','ux','uy'};\n";
+            out << "result.nodal_result = [\n";
+            for (int i = 0; i < result.nodal_u.rows(); ++i)
+            {
+                out << "    " << i + 1
+                    << ", " << mesh.nodes(i, 0)
+                    << ", " << mesh.nodes(i, 1)
+                    << ", " << result.nodal_u(i, 0)
+                    << ", " << result.nodal_u(i, 1)
+                    << ";\n";
+            }
+        }
+        out << "];\n";
+    }
+
+    void write_comparison_files(const std::filesystem::path &output_dir,
+                                const std::string &base_name,
+                                Method method,
+                                Scenario scenario,
                                 const Eigen::Vector2i &num_els,
-                                fem::NewtonOptions &newton)
-{
-    if (num_els.prod() < model_parameters::default_large_problem_element_threshold)
+                                const Result &result,
+                                const Mesh &mesh,
+                                bool has_exact_solution,
+                                const OutputOptions &output_options)
     {
-        return;
-    }
+        (void)method;
+        (void)scenario;
+        (void)num_els;
+        (void)has_exact_solution;
+        (void)output_options;
+        std::filesystem::create_directories(output_dir);
 
-    if (scenario != fem::Scenario::NonlinearPatch && scenario != fem::Scenario::BendingBlock)
-    {
-        return;
-    }
-
-    if (method == fem::Method::ESFEM || method == fem::Method::CSFEM)
-    {
-        newton.linear_solver = parse_solver_type(model_parameters::default_large_problem_linear_solver);
-        newton.iterative_maxiter =
-            std::max(newton.iterative_maxiter, model_parameters::default_large_problem_iterative_maxiter);
-        newton.iterative_tolerance =
-            std::max(newton.iterative_tolerance, model_parameters::default_large_problem_iterative_tolerance);
-    }
-}
-
-void write_matlab_bundle(const std::filesystem::path &output_dir,
-                         const std::string &base_name,
-                         const fem::Mesh &mesh,
-                         const fem::Result &result,
-                         bool has_exact_solution)
-{
-    const std::filesystem::path bundle_file = output_dir / (base_name + "_result.m");
-    std::ofstream out(bundle_file);
-    if (!out)
-    {
-        throw std::runtime_error("Failed to open MATLAB bundle: " + bundle_file.string());
-    }
-
-    out << std::setprecision(16);
-    out << "% Auto-generated result bundle\n";
-    out << "result.name = '" << base_name << "';\n";
-
-    out << "result.nodes = [\n";
-    for (int i = 0; i < mesh.nodes.rows(); ++i)
-    {
-        out << "    " << i + 1 << ", " << mesh.nodes(i, 0) << ", " << mesh.nodes(i, 1) << ";\n";
-    }
-    out << "];\n";
-
-    out << "result.elements = [\n";
-    for (std::size_t i = 0; i < mesh.elements.size(); ++i)
-    {
-        out << "    " << i + 1;
-        for (int a = 0; a < 6; ++a)
+        const std::filesystem::path summary_file = output_dir / (base_name + "_output.txt");
+        std::ofstream summary(summary_file);
+        if (!summary)
         {
-            out << ", " << mesh.elements[i][static_cast<std::size_t>(a)] + 1;
+            throw std::runtime_error("Failed to open output summary: " + summary_file.string());
         }
-        out << ";\n";
-    }
-    out << "];\n";
-
-    if (has_exact_solution && result.exact_u.rows() == result.nodal_u.rows())
-    {
-        out << "result.nodal_result_columns = {'node','x','y','ux','uy','ux_exact','uy_exact','ux_error','uy_error'};\n";
-        out << "result.nodal_result = [\n";
-        for (int i = 0; i < result.nodal_u.rows(); ++i)
+        summary << std::setprecision(16);
+        summary << "relative_error " << result.relative_error << '\n';
+        summary << "strain_energy " << result.strain_energy << '\n';
+        summary << "num_nodes " << result.nodal_u.rows() << '\n';
+        summary << "num_steps " << result.strain_energy_history.size() << '\n';
+        summary << "has_exact_solution " << (has_exact_solution ? 1 : 0) << '\n';
+        for (std::size_t i = 0; i < result.strain_energy_history.size(); ++i)
         {
-            out << "    " << i + 1
-                << ", " << mesh.nodes(i, 0)
-                << ", " << mesh.nodes(i, 1)
-                << ", " << result.nodal_u(i, 0)
-                << ", " << result.nodal_u(i, 1)
-                << ", " << result.exact_u(i, 0)
-                << ", " << result.exact_u(i, 1)
-                << ", " << (result.nodal_u(i, 0) - result.exact_u(i, 0))
-                << ", " << (result.nodal_u(i, 1) - result.exact_u(i, 1))
-                << ";\n";
+            summary << "strain_energy_history[" << i + 1 << "] " << result.strain_energy_history[i] << '\n';
         }
-    }
-    else
-    {
-        out << "result.nodal_result_columns = {'node','x','y','ux','uy'};\n";
-        out << "result.nodal_result = [\n";
-        for (int i = 0; i < result.nodal_u.rows(); ++i)
-        {
-            out << "    " << i + 1
-                << ", " << mesh.nodes(i, 0)
-                << ", " << mesh.nodes(i, 1)
-                << ", " << result.nodal_u(i, 0)
-                << ", " << result.nodal_u(i, 1)
-                << ";\n";
-        }
-    }
-    out << "];\n";
-}
 
-void write_comparison_files(const std::filesystem::path &output_dir,
-                            const std::string &base_name,
-                            fem::Method method,
-                            fem::Scenario scenario,
-                            const Eigen::Vector2i &num_els,
-                            const fem::Result &result,
-                            const fem::Mesh &mesh,
-                            bool has_exact_solution,
-                            const OutputOptions &output_options)
-{
-    (void)method;
-    (void)scenario;
-    (void)num_els;
-    (void)has_exact_solution;
-    (void)output_options;
-    std::filesystem::create_directories(output_dir);
-
-    const std::filesystem::path summary_file = output_dir / (base_name + "_output.txt");
-    std::ofstream summary(summary_file);
-    if (!summary)
-    {
-        throw std::runtime_error("Failed to open output summary: " + summary_file.string());
+        write_res_json(output_dir, base_name, mesh, result);
     }
-    summary << std::setprecision(16);
-    summary << "relative_error " << result.relative_error << '\n';
-    summary << "strain_energy " << result.strain_energy << '\n';
-    summary << "num_nodes " << result.nodal_u.rows() << '\n';
-    summary << "num_steps " << result.strain_energy_history.size() << '\n';
-    summary << "has_exact_solution " << (has_exact_solution ? 1 : 0) << '\n';
-    for (std::size_t i = 0; i < result.strain_energy_history.size(); ++i)
-    {
-        summary << "strain_energy_history[" << i + 1 << "] " << result.strain_energy_history[i] << '\n';
-    }
-
-    write_res_json(output_dir, base_name, mesh, result);
-}
 
 } // namespace
 
@@ -375,11 +377,11 @@ int main(int argc, char **argv)
             }
         }
 
-        fem::Scenario scenario = fem::parse_scenario(model_parameters::default_problem_type);
+        Scenario scenario = parse_scenario(model_parameters::default_problem_type);
         bool scenario_set = false;
-        const std::vector<fem::Method> methods = {fixed_method()};
+        const std::vector<Method> methods = {fixed_method()};
         Eigen::Vector2i num_els = model_parameters::default_num_els_vector();
-        fem::NewtonOptions newton;
+        NewtonOptions newton;
         newton.nstep = model_parameters::default_nstep;
         newton.maxiter = model_parameters::default_maxiter;
         newton.tolerance = model_parameters::default_tolerance;
@@ -405,7 +407,8 @@ int main(int argc, char **argv)
             const std::string &arg = args[i];
             if (!arg.empty() && arg[0] == '-')
             {
-                auto require_value = [&](const char *name) -> const std::string & {
+                auto require_value = [&](const char *name) -> const std::string &
+                {
                     if (i + 1 >= args.size())
                     {
                         throw std::invalid_argument(std::string("Missing value for ") + name);
@@ -498,7 +501,7 @@ int main(int argc, char **argv)
             }
             else if (!scenario_set)
             {
-                scenario = fem::parse_scenario(arg);
+                scenario = parse_scenario(arg);
                 scenario_set = true;
             }
             else
@@ -510,13 +513,13 @@ int main(int argc, char **argv)
         apply_problem_specific_newton_tuning(fixed_method(), scenario, num_els, newton);
 #ifdef USE_EIGEN_UMFPACK
         if (!solver_overridden &&
-            scenario == fem::Scenario::Cook &&
-            (fixed_method() == fem::Method::CSFEM || fixed_method() == fem::Method::ESFEM))
+            scenario == Scenario::Cook &&
+            (fixed_method() == Method::CSFEM || fixed_method() == Method::ESFEM))
         {
-            newton.linear_solver = fem::LinearSolverType::UmfPack;
+            newton.linear_solver = LinearSolverType::UmfPack;
         }
 #endif
-        fem::NewtonOptions large_problem_tuned = newton;
+        NewtonOptions large_problem_tuned = newton;
         apply_large_problem_tuning(fixed_method(), scenario, num_els, large_problem_tuned);
         if (!solver_overridden)
         {
@@ -531,12 +534,12 @@ int main(int argc, char **argv)
             newton.iterative_tolerance = large_problem_tuned.iterative_tolerance;
         }
 
-        for (const fem::Method method : methods)
+        for (const Method method : methods)
         {
             const auto total_start = std::chrono::steady_clock::now();
-            const fem::StructuralProblem problem = fem::StructuralProblem::make_patch_test(method, scenario, num_els);
-            const auto solver = fem::make_solver(method);
-            const std::filesystem::path run_dir = output_dir / fem::scenario_name(scenario) / fem::method_name(method);
+            const StructuralProblem problem = StructuralProblem::make_patch_test(method, scenario, num_els);
+            const auto solver = make_solver(method);
+            const std::filesystem::path run_dir = output_dir / scenario_name(scenario) / method_name(method);
             std::filesystem::create_directories(run_dir);
             if (newton.debug_csfem_bending && newton.debug_output_dir.empty())
             {
@@ -544,16 +547,16 @@ int main(int argc, char **argv)
             }
 
             const auto solve_start = std::chrono::steady_clock::now();
-            const fem::Result result = solver->solve(problem, newton);
+            const Result result = solver->solve(problem, newton);
             const auto solve_end = std::chrono::steady_clock::now();
 
             const std::string base_name = result_base_name(method, scenario, problem.data().num_els);
             const std::filesystem::path vtk_file = run_dir / (base_name + ".vtu");
             if (output_options.write_vtu)
             {
-                fem::write_vtu(vtk_file, problem.data().mesh, result.nodal_u, result.exact_u);
+                write_vtu(vtk_file, problem.data().mesh, result.nodal_u, result.exact_u);
             }
-            if (method == fem::Method::CSFEM || method == fem::Method::ESFEM)
+            if (method == Method::CSFEM || method == Method::ESFEM)
             {
                 write_comparison_files(run_dir,
                                        base_name,
@@ -571,8 +574,8 @@ int main(int argc, char **argv)
             {
                 benchmark::Record record;
                 record.timestamp_utc = benchmark::utc_timestamp_now();
-                record.problem_type = fem::scenario_name(scenario);
-                record.method = fem::method_name(method);
+                record.problem_type = scenario_name(scenario);
+                record.method = method_name(method);
                 record.num_els_x = problem.data().num_els(0);
                 record.num_els_y = problem.data().num_els(1);
                 record.nstep = newton.nstep;
@@ -598,7 +601,7 @@ int main(int argc, char **argv)
                       << " total="
                       << benchmark::seconds_between(total_start, total_end)
                       << '\n';
-            std::cout << fem::scenario_name(scenario) << " / " << fem::method_name(method)
+            std::cout << scenario_name(scenario) << " / " << method_name(method)
                       << ": rel_error=" << result.relative_error
                       << ", strain_energy=" << result.strain_energy
                       << ", output=" << (output_options.write_vtu ? vtk_file.string() : run_dir.string()) << '\n';
