@@ -92,7 +92,7 @@ namespace
 #endif
         std::cout
             << "Usage:\n"
-            << "  " << exe_name << " [linear_patch|nonlinear_patch|cantilever|bending_block|cook] [options]\n\n"
+            << "  " << exe_name << " [linear_patch|nonlinear_patch|cantilever|bending_block|cook|cook1|cook2|cook3|cook4|cook5] [options]\n\n"
             << "Options:\n"
             << "  --num-els <n|nxm>\n"
             << "  --num-els-x <n>\n"
@@ -112,7 +112,7 @@ namespace
             << "  --debug-csfem-bending\n"
             << "  --help\n\n"
             << "Notes:\n"
-            << "  cook reads data/Cook.msh directly; generate it first with data/run_mesh.sh.\n";
+            << "  cook/cook1-cook5 read data/Cook*.msh directly; generate them first with data/run_mesh.sh.\n";
     }
 
     std::string solver_name(LinearSolverType solver)
@@ -147,9 +147,11 @@ namespace
                                  Scenario scenario,
                                  const Eigen::Vector2i &num_els)
     {
-        if (scenario == Scenario::Cook)
+        if (scenario == Scenario::Cook  || scenario == Scenario::Cook1 ||
+            scenario == Scenario::Cook2 || scenario == Scenario::Cook3 ||
+            scenario == Scenario::Cook4 || scenario == Scenario::Cook5)
         {
-            return method_prefix(method) + "_cook";
+            return method_prefix(method) + "_" + scenario_name(scenario);
         }
         return method_prefix(method) + "_" + scenario_name(scenario) + "_" +
                std::to_string(num_els(0)) + "x" + std::to_string(num_els(1));
@@ -520,7 +522,9 @@ int main(int argc, char **argv)
         apply_problem_specific_newton_tuning(fixed_method(), scenario, num_els, newton);
 #ifdef USE_EIGEN_UMFPACK
         if (!solver_overridden &&
-            scenario == Scenario::Cook &&
+            (scenario == Scenario::Cook  || scenario == Scenario::Cook1 ||
+             scenario == Scenario::Cook2 || scenario == Scenario::Cook3 ||
+             scenario == Scenario::Cook4 || scenario == Scenario::Cook5) &&
             (fixed_method() == Method::CSFEM || fixed_method() == Method::ESFEM))
         {
             newton.linear_solver = LinearSolverType::UmfPack;

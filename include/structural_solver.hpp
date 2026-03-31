@@ -25,7 +25,12 @@ namespace sfem
         NonlinearPatch,
         Cantilever,
         BendingBlock,
-        Cook
+        Cook,
+        Cook1,
+        Cook2,
+        Cook3,
+        Cook4,
+        Cook5
     };
 
     enum class LinearSolverType

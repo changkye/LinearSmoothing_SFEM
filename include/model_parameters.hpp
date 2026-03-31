@@ -73,12 +73,18 @@ namespace model_parameters
         {
             material.poisson = 0.0;
         }
+        // Cook* problems: mu=1.0, kappa=1000 => E=9*kappa*mu/(3*kappa+mu), nu=(3*kappa-2*mu)/(2*(3*kappa+mu))
+        if (problem_type.substr(0, 4) == "cook")
+        {
+            material.young   = 9000.0 / 3001.0;
+            material.poisson = 1499.0 / 3001.0;
+        }
         return material;
     }
 
     inline NeoHookeanMaterial nonlinear_material_for(std::string_view problem_type)
     {
-        if (problem_type == "cook")
+        if (problem_type.substr(0, 4) == "cook")
         {
             return NeoHookeanMaterial{1.0, 1000.0};
         }

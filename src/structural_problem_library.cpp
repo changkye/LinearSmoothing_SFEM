@@ -437,7 +437,10 @@ namespace sfem
         Eigen::VectorXd make_force_vector(Scenario scenario, const Mesh &mesh)
         {
             Eigen::VectorXd force = Eigen::VectorXd::Zero(2 * mesh.nodes.rows());
-            if (scenario != Scenario::Cantilever && scenario != Scenario::Cook)
+            const bool is_cook_variant = (scenario == Scenario::Cook  || scenario == Scenario::Cook1 ||
+                                          scenario == Scenario::Cook2 || scenario == Scenario::Cook3 ||
+                                          scenario == Scenario::Cook4 || scenario == Scenario::Cook5);
+            if (scenario != Scenario::Cantilever && !is_cook_variant)
             {
                 return force;
             }
@@ -448,7 +451,7 @@ namespace sfem
                 return force;
             }
 
-            const double total_force_y = (scenario == Scenario::Cook) ? kCookTotalLoadY : -1.0;
+            const double total_force_y = is_cook_variant ? kCookTotalLoadY : -1.0;
             const double nodal_force = total_force_y / static_cast<double>(loaded_nodes.size());
             for (const int node : loaded_nodes)
             {
@@ -461,7 +464,8 @@ namespace sfem
 
     std::vector<Scenario> ProblemLibrary::available()
     {
-        return {Scenario::LinearPatch, Scenario::NonlinearPatch, Scenario::Cantilever, Scenario::BendingBlock, Scenario::Cook};
+        return {Scenario::LinearPatch, Scenario::NonlinearPatch, Scenario::Cantilever, Scenario::BendingBlock,
+                Scenario::Cook, Scenario::Cook1, Scenario::Cook2, Scenario::Cook3, Scenario::Cook4, Scenario::Cook5};
     }
 
     std::string ProblemLibrary::name(Scenario scenario)
@@ -478,6 +482,16 @@ namespace sfem
             return "bending_block";
         case Scenario::Cook:
             return "cook";
+        case Scenario::Cook1:
+            return "cook1";
+        case Scenario::Cook2:
+            return "cook2";
+        case Scenario::Cook3:
+            return "cook3";
+        case Scenario::Cook4:
+            return "cook4";
+        case Scenario::Cook5:
+            return "cook5";
         }
         throw std::invalid_argument("Unknown scenario");
     }
@@ -504,6 +518,26 @@ namespace sfem
         if (lower == "cook")
         {
             return Scenario::Cook;
+        }
+        if (lower == "cook1")
+        {
+            return Scenario::Cook1;
+        }
+        if (lower == "cook2")
+        {
+            return Scenario::Cook2;
+        }
+        if (lower == "cook3")
+        {
+            return Scenario::Cook3;
+        }
+        if (lower == "cook4")
+        {
+            return Scenario::Cook4;
+        }
+        if (lower == "cook5")
+        {
+            return Scenario::Cook5;
         }
         throw std::invalid_argument("Unsupported scenario: " + value);
     }
@@ -538,7 +572,10 @@ namespace sfem
     BoundaryCondition ProblemLibrary::make_boundary_condition(Scenario scenario, const Eigen::MatrixXd &nodes)
     {
         BoundaryCondition bc;
-        if (scenario == Scenario::Cantilever || scenario == Scenario::Cook)
+        if (scenario == Scenario::Cantilever || scenario == Scenario::Cook ||
+            scenario == Scenario::Cook1 || scenario == Scenario::Cook2 ||
+            scenario == Scenario::Cook3 || scenario == Scenario::Cook4 ||
+            scenario == Scenario::Cook5)
         {
             return make_zero_boundary_condition(left_edge_nodes(nodes));
         }
@@ -566,17 +603,24 @@ namespace sfem
         model.num_els = num_els;
         model.name = name(scenario) + "_" + method_name(method);
 
-        if (scenario == Scenario::Cook)
+        auto build_cook_variant = [&](const std::string &mesh_file) -> Model
         {
             const model_parameters::NeoHookeanMaterial nonlinear_material = model_parameters::nonlinear_material_for("cook");
-            model.mesh = load_gmsh_t6_mesh(locate_data_file("Cook.msh"));
+            model.mesh = load_gmsh_t6_mesh(locate_data_file(mesh_file));
             model.bc = make_boundary_condition(scenario, model.mesh.nodes);
             model.force = make_force_vector(scenario, model.mesh);
             model.nonlinear_material << nonlinear_material.mu, nonlinear_material.lambda_like;
             model.has_exact_solution = false;
             model.num_els = Eigen::Vector2i(static_cast<int>(model.mesh.elements.size()), 0);
             return model;
-        }
+        };
+
+        if (scenario == Scenario::Cook)  { return build_cook_variant("Cook.msh");  }
+        if (scenario == Scenario::Cook1) { return build_cook_variant("Cook1.msh"); }
+        if (scenario == Scenario::Cook2) { return build_cook_variant("Cook2.msh"); }
+        if (scenario == Scenario::Cook3) { return build_cook_variant("Cook3.msh"); }
+        if (scenario == Scenario::Cook4) { return build_cook_variant("Cook4.msh"); }
+        if (scenario == Scenario::Cook5) { return build_cook_variant("Cook5.msh"); }
 
         const std::string problem_type = name(scenario);
         const model_parameters::Geometry geometry = model_parameters::geometry_for(problem_type);
