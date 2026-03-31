@@ -2,8 +2,13 @@ res/
 bin/
 build/
 .DS_Store
-02-Matlab/results/**/*.vtu
-02-Matlab/results/**/*.mat
+99-Matlab/results/**/*.vtu
+99-Matlab/results/**/*.mat
 data/__pycache__/
 data/*.msh
 data/*.vtu
+.idea/
+02-Patch/res/
+02-Patch/.idea/
+**/bin/
+**/build/

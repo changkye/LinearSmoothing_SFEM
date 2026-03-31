@@ -30,18 +30,235 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e1bc03f5-a19d-483b-b345-0451331a27f5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/LinearSmoothing_SFEM.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/model_parameters.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/model_parameters.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/nonlinear_sfem_t6_problem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/nonlinear_sfem_t6_problem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sfem_basis.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/sfem_basis.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sfem_edge_assembler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/sfem_edge_assembler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_1_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_2_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_3_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_4_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_5.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_5_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_5_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_5_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/Cook_5_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/cook_5.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Cook/cook_5.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_12x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_16x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_20x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_24x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_28x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_4x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/Indentation_8x4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/Indentation/meshDistortionIndentation.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_1_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_2_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_3_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_4_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/PlateHole_5_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/PlateHole1.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/msh2mat2D.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_1_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2.mat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2.msh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/PlateHole/backup/plate_hole_2_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/example_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/example_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/example_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/example_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/file_column_count.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/file_row_count.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4_modp.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4_wrap.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4col_compare.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4col_sort_a.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4col_sorted_unique_count.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4col_swap.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4mat_data_read.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4mat_header_read.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4mat_transpose_print.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4mat_transpose_print_some.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/i4mat_write.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/mesh_base_one.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/r8mat_data_read.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/r8mat_header_read.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/r8mat_transpose_print.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/r8mat_transpose_print_some.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/r8mat_write.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/s_len_trim.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/s_word_count.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/sort_heap_external.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/timestamp.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/triangulation_l2q.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/triangulation_neighbor_triangles.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/T3_to_T6/triangulation_order3_boundary_edge_count.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/example_l2q_elements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/example_l2q_nodes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/gmsh/msh2mat.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/linearFEM2D_cantilever.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/linearFEM2D_plate_hole.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/linearSFEM2D_cell_cantilever.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/linearSFEM2D_cell_plate_hole.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/linearSFEM2D_edge_cantilever.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/linearSFEM2D_edge_plate_hole.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/elementQ4.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/elementQ8.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/elementQ9.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/elementT3.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/elementT4.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/elementT6.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_BendingBlock.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_Cantilever.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_Comp_DBC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_Comp_NBC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_Cook.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_Indentation.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_NOT_SS_DBC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_PlateHole.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_SS_DBC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_SS_NBC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_lin_patch.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/models/model_quad_patch.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/nonlinearFEM2D_cantilever.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/patch_linearFEM2D.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/patch_linearSFEM2D_cell.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/patch_linearSFEM2D_edge.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/patch_nonlinearFEM2D.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/patch_nonlinearSFEM2D_cell.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/patch_nonlinearSFEM2D_edge.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/CustomColors.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/Result_Comp_DBC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/bending_block_result.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/comp_result.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/not_ss_dbc_result.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/ss_dbc_results.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/results/ss_nbc_results.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/FEM2D_T3_cantilever_force.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/FEM2D_T6_cantilever_force.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/FEM2D_cantilever_analytic.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/FEM2D_cantilever_force.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/SFEM2D_edge_T3_cantilever_analytic.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/SFEM2D_edge_T6_cantilever_analytic.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/SFEM2D_edge_T6_cantilever_analytic_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/VTKPostProcess.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/cal_nx_ny.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/cal_side.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/cal_xieta.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_0.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_1_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_1_2.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_2.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_3.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_4.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/esfem-K_backup/linearSFEM2D_edge_stiffness_T6_5.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/exactPlateHole.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/exactPlateHole_nl.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/feaplyc2.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/feaplyc2_nl.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/forcePlateHole.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/getCoeff.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/getNonlinearBmat2D.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/getSerendipityShapeFunc_lagrange.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/getTargetEdge.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/lagrange_basis.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearConstitutive.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearFEM2D_stiffness.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_Q8.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_Q8_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_Q9.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_Q9_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_T3.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_T3_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_T6.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_cell_stiffness_T6_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_edge_stiffness_T3.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_edge_stiffness_T3_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_edge_stiffness_T3_2.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_edge_stiffness_T6.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/linearSFEM2D_edge_stiffness_T6_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/meshGeneration2D.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/nonlinearConstitutive.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/nonlinearFEM2D_stiffness.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/nonlinearSFEM2D_cell_stiffness.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/nonlinearSFEM2D_edge_stiffness_T6.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/plotField.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/plotMesh.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/plot_mesh.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/polygeom.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/quad_patch_force_cell.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/quad_patch_force_edge.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/quad_patch_force_edge_1.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/quadrature.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/wachspress2D.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02-Matlab/sources/xi_eta4xy.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Cant.geo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/LShaped.geo" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,41 +293,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "CMake Application.csfem.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/cklee/Desktop/03-CK_Code/LinearSmoothing_SFEM",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.first.attach.projects": "true",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;CMake Application.csfem.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/cklee/Desktop/03-CK_Code/LinearSmoothing_SFEM&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="CMake Application.csfem">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="csfem" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="linear_smoothing_sfem_cpp" TARGET_NAME="csfem" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="linear_smoothing_sfem_cpp" RUN_TARGET_NAME="csfem">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -140,6 +352,7 @@
       <workItem from="1774882386941" duration="64000" />
       <workItem from="1774882483725" duration="290000" />
       <workItem from="1774882880512" duration="1546000" />
+      <workItem from="1774981715096" duration="9000" />
     </task>
     <servers />
   </component>

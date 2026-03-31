@@ -5,15 +5,14 @@
 SetFactory("Built-in");
 
 // Geometry parameters
-L  = 6.0;   // total length in x
-H  = 2.0;   // total height in y
-lc = 0.05;  // target mesh size
+L  = 1;   // total length in x
+lc = 0.25;  // target mesh size
 
 // Points
 Point(1) = {0, 0, 0, lc};
 Point(2) = {L, 0, 0, lc};
-Point(3) = {L, H, 0, lc};
-Point(4) = {0, H, 0, lc};
+Point(3) = {L, L, 0, lc};
+Point(4) = {0, L, 0, lc};
 
 // Boundary lines
 Line(1) = {1, 2}; // bottom
@@ -26,10 +25,10 @@ Curve Loop(1) = {1, 2, 3, 4};
 Plane Surface(1) = {1};
 
 // Physical groups for FEM/FEniCS
-Physical Curve("bottom")  = {1};
-Physical Curve("right")   = {2};
-Physical Curve("top") = {3};
-Physical Curve("left") = {4};
+Physical Curve("bottom")         = {1}; // P1->P2: y=0,  base bottom
+Physical Curve("right")          = {2}; // P2->P3: x=3L, outer right wall
+Physical Curve("top")            = {3}; // P5->P6: y=2L, top of web
+Physical Curve("left")           = {4}; // P8->P1: x=0,  outer left wall
 Physical Surface("domain") = {1};
 
 // Mesh options
