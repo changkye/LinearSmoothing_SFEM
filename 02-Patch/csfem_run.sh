@@ -59,7 +59,7 @@ for arg in "$@"; do
 done
 
 case "${CASE_NAME}" in
-    linear_patch|cantilever|cook|cook1|cook2|cook3|cook4|cook5)
+    linear_patch|high_order_patch|cantilever|cook|cook1|cook2|cook3|cook4|cook5)
         bash "${ROOT_DIR}/csfem_build.sh" --ensure
         if [[ "${CASE_NAME}" == cook* ]]; then
             # Capitalise first letter to match .geo/.msh file names (cook1 -> Cook1)

@@ -1494,7 +1494,7 @@ namespace sfem
             const int nc = static_cast<int>(neighbour.size());
             const QuadratureRule wb = gauss_line_rule(nonlinear ? 3 : 2);
 
-            const int m = nonlinear ? 6 : (nc == 1 ? 3 : 4);
+            const int m = 6; // Always use quadratic basis for smoothing
             Eigen::MatrixXd fx;
             Eigen::MatrixXd fy;
             std::vector<int> nodl;
@@ -1529,25 +1529,9 @@ namespace sfem
                         const Eigen::VectorXd nt = serendipity_shape("T6", wkx, gp);
                         const Eigen::RowVectorXd n = (nt * detj * wb.weights(ig)).transpose();
 
-                        if (nonlinear)
-                        {
-                            Eigen::VectorXd p(6);
-                            p << 1.0, gp(0), gp(1), gp(0) * gp(0), gp(0) * gp(1), gp(1) * gp(1);
-                            bxy += p * n;
-                        }
-                        else if (nc == 1)
-                        {
-                            bxy.row(0) += n;
-                            bxy.row(1) += n * gp(0);
-                            bxy.row(2) += n * gp(1);
-                        }
-                        else
-                        {
-                            bxy.row(0) += n;
-                            bxy.row(1) += n * gp(0);
-                            bxy.row(2) += n * gp(1);
-                            bxy.row(3) += n * gp(0) * gp(1);
-                        }
+                        Eigen::VectorXd p(6);
+                        p << 1.0, gp(0), gp(1), gp(0) * gp(0), gp(0) * gp(1), gp(1) * gp(1);
+                        bxy += p * n;
                     }
                     lfx += nx[static_cast<std::size_t>(is)] * bxy;
                     lfy += ny[static_cast<std::size_t>(is)] * bxy;
@@ -1592,7 +1576,7 @@ namespace sfem
             {
                 reordered_nodes.assign(nodl.begin(), nodl.end());
                 element_type = "T6";
-                wi = triangle_rule(nonlinear ? 4 : 2);
+                wi = triangle_rule(4); // Use higher order quadrature for quadratic basis
             }
             else
             {
@@ -1646,7 +1630,7 @@ namespace sfem
                 }
 
                 element_type = "Q9";
-                wi = gauss_quad_rule(nonlinear ? 3 : 2);
+                wi = gauss_quad_rule(3); // Use higher order quadrature for quadratic basis
             }
 
             std::unordered_map<int, int> support_pos;
@@ -1667,12 +1651,11 @@ namespace sfem
                 rfy.col(i) = fy.col(src);
             }
 
-            Eigen::MatrixXd ni = Eigen::MatrixXd::Zero(nonlinear ? 5 : 3, gcoord.rows());
-            Eigen::MatrixXd wmat((nonlinear ? 6 : (nc == 1 ? 3 : 4)), wi.weights.size());
-            Eigen::MatrixXd pmat(wi.weights.size(), nonlinear ? 6 : (nc == 1 ? 3 : 4));
+            Eigen::MatrixXd ni = Eigen::MatrixXd::Zero(6, gcoord.rows()); // Changed to 6 for quadratic basis
+            Eigen::MatrixXd pmat(wi.weights.size(), 6); // Changed to 6 for quadratic basis
             std::vector<double> mw(static_cast<std::size_t>(wi.weights.size()));
             Eigen::MatrixXd mq(wi.weights.size(), 2);
-            Eigen::MatrixXd mmat = Eigen::MatrixXd::Zero(wmat.rows(), wmat.rows());
+            Eigen::MatrixXd mmat = Eigen::MatrixXd::Zero(6, 6); // Changed to 6x6 for quadratic basis
 
             for (int ig = 0; ig < wi.weights.size(); ++ig)
             {
@@ -1680,8 +1663,8 @@ namespace sfem
                 Eigen::MatrixXd dndxi1;
                 if (nc == 1)
                 {
-                    lagrange_basis(nonlinear ? "T6" : "T3", wi.points.row(ig), n1, dndxi1);
-                    const int nmap = nonlinear ? 6 : 3;
+                    lagrange_basis("T6", wi.points.row(ig), n1, dndxi1);
+                    const int nmap = 6; // Always 6 for T6
                     const Eigen::MatrixXd base = gcoord.topRows(nmap);
                     const double detj = (dndxi1.transpose() * base).determinant();
                     mq.row(ig) = (base.transpose() * n1).transpose();
@@ -1689,8 +1672,8 @@ namespace sfem
                 }
                 else
                 {
-                    lagrange_basis(nonlinear ? "Q9" : "Q4", wi.points.row(ig), n1, dndxi1);
-                    const int nmap = nonlinear ? 9 : 4;
+                    lagrange_basis("Q9", wi.points.row(ig), n1, dndxi1);
+                    const int nmap = 9; // Always 9 for Q9
                     const Eigen::MatrixXd base = gcoord.topRows(nmap);
                     const double detj = (dndxi1.transpose() * base).determinant();
                     mq.row(ig) = (base.transpose() * n1).transpose();
@@ -1698,72 +1681,41 @@ namespace sfem
                 }
 
                 const Eigen::VectorXd n = serendipity_shape(element_type, gcoord, mq.row(ig));
-                if (nonlinear)
-                {
-                    Eigen::VectorXd p(6);
-                    p << 1.0, mq(ig, 0), mq(ig, 1), mq(ig, 0) * mq(ig, 0), mq(ig, 0) * mq(ig, 1), mq(ig, 1) * mq(ig, 1);
-                    pmat.row(ig) = p.transpose();
-                    mmat += mw[static_cast<std::size_t>(ig)] * (p * p.transpose());
-                    ni.row(0) += (n * mw[static_cast<std::size_t>(ig)]).transpose();
-                    ni.row(1) += (2.0 * n * mw[static_cast<std::size_t>(ig)] * mq(ig, 0)).transpose();
-                    ni.row(2) += (2.0 * n * mw[static_cast<std::size_t>(ig)] * mq(ig, 1)).transpose();
-                    ni.row(3) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 0)).transpose();
-                    ni.row(4) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 1)).transpose();
-                }
-                else if (nc == 1)
-                {
-                    ni.row(0) += (n * mw[static_cast<std::size_t>(ig)]).transpose();
-                    wmat.col(ig) << mw[static_cast<std::size_t>(ig)], mw[static_cast<std::size_t>(ig)] * mq(ig, 0), mw[static_cast<std::size_t>(ig)] * mq(ig, 1);
-                }
-                else
-                {
-                    ni.row(0) += (n * mw[static_cast<std::size_t>(ig)]).transpose();
-                    ni.row(1) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 0)).transpose();
-                    ni.row(2) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 1)).transpose();
-                    wmat.col(ig) << mw[static_cast<std::size_t>(ig)],
-                        mw[static_cast<std::size_t>(ig)] * mq(ig, 0),
-                        mw[static_cast<std::size_t>(ig)] * mq(ig, 1),
-                        mw[static_cast<std::size_t>(ig)] * mq(ig, 0) * mq(ig, 1);
-                }
+                Eigen::VectorXd p(6);
+                p << 1.0, mq(ig, 0), mq(ig, 1), mq(ig, 0) * mq(ig, 0), mq(ig, 0) * mq(ig, 1), mq(ig, 1) * mq(ig, 1);
+                pmat.row(ig) = p.transpose();
+                mmat += mw[static_cast<std::size_t>(ig)] * (p * p.transpose());
+                ni.row(0) += (n * mw[static_cast<std::size_t>(ig)]).transpose();
+                ni.row(1) += (2.0 * n * mw[static_cast<std::size_t>(ig)] * mq(ig, 0)).transpose();
+                ni.row(2) += (2.0 * n * mw[static_cast<std::size_t>(ig)] * mq(ig, 1)).transpose();
+                ni.row(3) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 0)).transpose();
+                ni.row(4) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 1)).transpose();
+                ni.row(5) += (n * mw[static_cast<std::size_t>(ig)] * mq(ig, 0) * mq(ig, 1)).transpose(); // Added for quadratic term
             }
 
-            if (nonlinear)
-            {
-                rfx.row(1) -= ni.row(0);
-                rfx.row(3) -= ni.row(1);
-                rfx.row(4) -= ni.row(4);
-                rfy.row(2) -= ni.row(0);
-                rfy.row(4) -= ni.row(3);
-                rfy.row(5) -= ni.row(2);
-            }
-            else if (nc == 1)
-            {
-                rfx.row(1) -= ni.row(0);
-                rfy.row(2) -= ni.row(0);
-            }
-            else
-            {
-                rfx.row(1) -= ni.row(0);
-                rfx.row(3) -= ni.row(2);
-                rfy.row(2) -= ni.row(0);
-                rfy.row(3) -= ni.row(1);
-            }
+            rfx.row(1) -= ni.row(0);
+            rfx.row(3) -= ni.row(1);
+            rfx.row(4) -= ni.row(4);
+            rfy.row(2) -= ni.row(0);
+            rfy.row(4) -= ni.row(3);
+            rfy.row(5) -= ni.row(2);
 
             Eigen::MatrixXd dx;
             Eigen::MatrixXd dy;
-            if (nonlinear)
-            {
-                const double alpha = 1.0e-10 * std::max(mmat.trace() / 6.0, 1.0);
-                const Eigen::MatrixXd mreg = mmat + alpha * Eigen::MatrixXd::Identity(6, 6);
-                const auto mreg_lu = mreg.fullPivLu();
-                dx = (pmat * mreg_lu.solve(rfx)).eval();
-                dy = (pmat * mreg_lu.solve(rfy)).eval();
+            const double alpha = 1.0e-10 * std::max(mmat.trace() / 6.0, 1.0);
+            const Eigen::MatrixXd mreg = mmat + alpha * Eigen::MatrixXd::Identity(6, 6);
+            const auto mreg_lu = mreg.fullPivLu();
+            dx = (pmat * mreg_lu.solve(rfx)).eval();
+            dy = (pmat * mreg_lu.solve(rfy)).eval();
+
+            // Debug output for sums of dx and dy
+            std::cout << "Debug: Sums of dx columns for edge " << edge_index << ":\n";
+            for (int c = 0; c < dx.cols(); ++c) {
+                std::cout << "  Col " << c << ": " << dx.col(c).sum() << "\n";
             }
-            else
-            {
-                const auto wmat_lu = wmat.fullPivLu();
-                dx = wmat_lu.solve(rfx);
-                dy = wmat_lu.solve(rfy);
+            std::cout << "Debug: Sums of dy columns for edge " << edge_index << ":\n";
+            for (int c = 0; c < dy.cols(); ++c) {
+                std::cout << "  Col " << c << ": " << dy.col(c).sum() << "\n";
             }
 
             SupportData data;

@@ -49,7 +49,7 @@ shift
 CASE_NAME="$(printf '%s' "${CASE_NAME}" | tr '[:upper:]' '[:lower:]')"
 
 case "${CASE_NAME}" in
-    linear_patch|cantilever|cook|cook1|cook2|cook3|cook4|cook5)
+    linear_patch|high_order_patch|cantilever|cook|cook1|cook2|cook3|cook4|cook5)
         bash "${ROOT_DIR}/esfem_build.sh" --ensure
         if [[ "${CASE_NAME}" == cook* ]]; then
             variant="$(tr '[:lower:]' '[:upper:]' <<< "${CASE_NAME:0:1}")${CASE_NAME:1}"

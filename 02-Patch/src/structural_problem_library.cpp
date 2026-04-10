@@ -516,6 +516,18 @@ namespace sfem
             return model;
         }
 
+        if (scenario == Scenario::HighOrderPatch)
+        {
+            model.mesh = load_gmsh_t6_mesh(locate_data_file("high_order_patch.msh"));
+            model.num_els = Eigen::Vector2i(static_cast<int>(model.mesh.elements.size()), 0);
+            model.linear_material << linear_material.young, linear_material.poisson;
+            model.cmat = linear_constitutive(linear_material.young, linear_material.poisson);
+            model.has_exact_solution = true;
+            model.bc = make_boundary_condition(scenario, model.mesh.nodes);
+            model.force = make_force_vector(model.mesh);
+            return model;
+        }
+
         model.mesh = load_gmsh_t6_mesh(locate_data_file("linear_patch.msh"));
         model.num_els = Eigen::Vector2i(static_cast<int>(model.mesh.elements.size()), 0);
         model.linear_material << linear_material.young, linear_material.poisson;
